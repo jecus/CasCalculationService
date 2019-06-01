@@ -32,5 +32,13 @@ namespace BusinessLayer.Repositiries
 				.Where(i => ids.Contains(i.ATLBID))
 				.ToListAsync();
 		}
+
+		public async Task<AircraftFlight> GetAircraftFlightsByIdAsync(int flightId)
+		{
+			return await _db.AircraftFlights
+				.AsNoTracking()
+				.OnlyActive()
+				.FirstOrDefaultAsync(i => i.Id == flightId);
+		}
 	}
 }

@@ -279,6 +279,19 @@ namespace Entity.Models
 
 		#endregion
 
+		#region public void Substract(Lifelength lifelength)
+
+		/// <summary>
+		/// Отнимает заданную наработку от уже существующей
+		/// </summary>
+		/// <param name="lifelength"></param>
+		public void Substract(Lifelength lifelength)
+		{
+			Lifelength lifelength2 = new Lifelength(-lifelength.Days, -lifelength.Cycles, -lifelength.TotalMinutes);
+			Add(lifelength2);
+		}
+
+		#endregion
 
 		public override string ToString()
 		{

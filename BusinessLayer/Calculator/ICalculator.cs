@@ -9,5 +9,8 @@ namespace BusinessLayer.Calculator
 	{
 		Task<Lifelength> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime date);
 		Task<Lifelength> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime date);
+		Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate);
+		Task<Lifelength> GetFlightLifelengthIncludingThisFlight(int flightId);
+		Task<Lifelength> GetCurrentFlightLifelength(int aircraftId);
 	}
 }

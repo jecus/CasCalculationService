@@ -40,6 +40,67 @@ namespace BusinessLayer.Calculator
 			return await getFlightLifelengthOnEndOfDay(aircraft, DateTime.Today);
 		}
 
+		public async Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate)
+		{
+			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(aircraftId);
+			return await getFlightLifelengthForPeriod(aircraft, fromDate, toDate);
+		}
+
+		public async Task<Lifelength> GetFlightLifelengthIncludingThisFlight(int flightId)
+		{
+			var flight = await _aircraftFlightRepository.GetAircraftFlightsByIdAsync(flightId);
+			return await getFlightLifelengthIncludingThisFlight(flight);
+		}
+
+		#region public async Task<Lifelength> GetCurrentFlightLifelength(int aircraftId)
+		/// <summary>
+		/// Возвращает текущий налет воздушного судна
+		/// </summary>
+		/// <param name="aircraft"></param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetCurrentFlightLifelength(int aircraftId)
+		{
+			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(aircraftId);
+			return await getFlightLifelengthOnEndOfDay(aircraft, DateTime.Today);
+		}
+		#endregion
+
+		#region private async Task<Lifelength> getFlightLifelengthIncludingThisFlight(AircraftFlight flight)
+		/// <summary> 
+		/// Возвращает налет воздушного судна после завершения указанного полета
+		/// </summary>
+		/// <param name="flight"></param>
+		/// <returns></returns>
+		private async Task<Lifelength> getFlightLifelengthIncludingThisFlight(AircraftFlight flight)
+		{
+			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(flight.AircraftId.Value);
+			if (aircraft == null) throw new Exception($"Flight {flight.Id} has no aircraft related");
+
+			// Если это был последний полет за указанный день возвращаем налет вс на конец дня
+			if (flight.LDGTime < flight.TakeOffTime) return await getFlightLifelengthOnEndOfDay(aircraft, flight.FlightDate.Value);
+
+			// Сначала получаем налет воздушного судна на заданную дату 
+			var initial = await getFlightLifelengthOnStartOfDay(aircraft, flight.FlightDate.Value);
+
+			// Пробегаемся по всем полетам, которые идут до этого полета
+			var flights = await _aircraftFlightRepository.GetAircraftFlightsByAircraftIdAsync(aircraft.Id);
+			foreach (var t in flights.Where(f => f.AtlbRecordType != AtlbRecordType.Maintenance))
+			{
+				if (t.FlightDate.Value.Date == flight.FlightDate.Value.Date)
+					initial.Add(t.FlightTimeLifelength);
+
+				// возвращаемся если дошли до заданного полета
+				if (t.Id == flight.Id) break;
+			}
+
+			// Календарь
+			initial.Days = GetDays(aircraft.ManufactureDate, (DateTime) flight.FlightDate);
+
+			// initial хранит в себе налет вс на начало соответсвующего дня + все полеты по заданный включительно
+			return initial;
+		}
+		#endregion
+		
 		#region private Lifelength getFlightLifelengthOnStartOfDay(Aircraft aircraft, DateTime date)
 
 		/// <summary>
@@ -139,6 +200,24 @@ namespace BusinessLayer.Calculator
 			var res = await getFlightLifelengthByPeriod(flights, aircraftFrame, dateFrom, dateTo);
 
 			res.Days = GetDays(dateFrom, dateTo);
+			return res;
+		}
+		#endregion
+
+		#region private Lifelength getFlightLifelengthForPeriod(Aircraft aircraft, DateTime fromDate, DateTime toDate)
+		/// <summary>
+		/// Возвращает налет воздушного судна за заданный интервал
+		/// </summary>
+		/// <param name="aircraft"></param>
+		/// <param name="fromDate"></param>
+		/// <param name="toDate"></param>
+		/// <returns></returns>
+		private async Task<Lifelength> getFlightLifelengthForPeriod(Aircraft aircraft, DateTime fromDate, DateTime toDate)
+		{
+			// Налет воздушного судна между двумя датами равен разности налета на заданные даты
+			var res = await getFlightLifelengthOnEndOfDay(aircraft, toDate);
+			res.Substract(await getFlightLifelengthOnEndOfDay(aircraft, fromDate));
+			res.Days = Convert.ToInt32((toDate.Date.Ticks - fromDate.Date.Ticks) / TimeSpan.TicksPerDay);
 			return res;
 		}
 		#endregion
