@@ -11,6 +11,7 @@ namespace Entity
 		public DbSet<ATLB> Atlbs { get; set; }
 		public DbSet<Aircraft> Aircrafts { get; set; }
 		public DbSet<Component> Components { get; set; }
+		public DbSet<BaseComponent> BaseComponents { get; set; }
 		public DbSet<ActualStateRecord> ActualStateRecords { get; set; }
 		private DbSet<IdQuery> IdQuery { get; set; }
 		private DbSet<DestinationObjectIdQuery> DestinationObjectIdQuery { get; set; }
@@ -30,6 +31,10 @@ namespace Entity
 		{
 			modelBuilder.Entity<Component>()
 				.HasMany(i => i.ActualStateRecords).WithOne(i => i.Component).HasForeignKey(i => i.ComponentId);
+			modelBuilder.Entity<Component>()
+				.HasDiscriminator<bool>("IsBaseComponent")
+				.HasValue<BaseComponent>(true)
+				.HasValue<Component>(false);
 		}
 
 		#endregion

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Entity.Models;
 
 namespace Entity.Entity
 {
@@ -13,7 +14,10 @@ namespace Entity.Entity
 		public string Remarks { get; set; }
 
 		[Column("OnLifelength")]
-		public byte[] OnLifelength { get; set; }
+		public byte[] OnLifelengthByte { get; set; }
+
+		[NotMapped] public Lifelength OnLifelength => Lifelength.ConvertFromByteArray(OnLifelengthByte);
+
 
 		[Column("RecordDate")]
 		public DateTime? RecordDate { get; set; }

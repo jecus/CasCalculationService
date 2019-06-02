@@ -28,11 +28,18 @@ namespace BusinessLayer.Calculator
 
 		// Воздушное судно
 
+		#region public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime date)
+
 		public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime date)
 		{
 			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(aircraftId);
 			return await getFlightLifelengthOnStartOfDay(aircraft, date);
 		}
+
+
+		#endregion
+
+		#region public async Task<Lifelength> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime date)
 
 		public async Task<Lifelength> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime date)
 		{
@@ -40,17 +47,27 @@ namespace BusinessLayer.Calculator
 			return await getFlightLifelengthOnEndOfDay(aircraft, DateTime.Today);
 		}
 
+		#endregion
+
+		#region public async Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate)
+
 		public async Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate)
 		{
 			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(aircraftId);
 			return await getFlightLifelengthForPeriod(aircraft, fromDate, toDate);
 		}
 
+		#endregion
+
+		#region public async Task<Lifelength> GetFlightLifelengthIncludingThisFlight(int flightId)
+
 		public async Task<Lifelength> GetFlightLifelengthIncludingThisFlight(int flightId)
 		{
 			var flight = await _aircraftFlightRepository.GetAircraftFlightsByIdAsync(flightId);
 			return await getFlightLifelengthIncludingThisFlight(flight);
 		}
+
+		#endregion
 
 		#region public async Task<Lifelength> GetCurrentFlightLifelength(int aircraftId)
 		/// <summary>
@@ -100,8 +117,8 @@ namespace BusinessLayer.Calculator
 			return initial;
 		}
 		#endregion
-		
-		#region private Lifelength getFlightLifelengthOnStartOfDay(Aircraft aircraft, DateTime date)
+
+		#region private async Task<Lifelength> getFlightLifelengthOnStartOfDay(Aircraft aircraft, DateTime date)
 
 		/// <summary>
 		/// Возвращает налет воздушного судна на начало дня (без учета совершенных полетов)
@@ -144,7 +161,7 @@ namespace BusinessLayer.Calculator
 
 		#endregion
 
-		#region private Lifelength getFlightLifelengthOnEndOfDay(Aircraft aircraft, DateTime date)
+		#region private async Task<Lifelength> getFlightLifelengthOnEndOfDay(Aircraft aircraft, DateTime date)
 		/// <summary>
 		/// Возвращает налет воздушного судна на конец дня (учитывая совершенные полеты)
 		/// </summary>
@@ -180,7 +197,7 @@ namespace BusinessLayer.Calculator
 
 		#endregion
 
-		#region private Lifelength getFlightsLifelengthByPeriod(Aircraft aircraft, DateTime dateFrom, DateTime dateTo)
+		#region private async Task<Lifelength> getFlightsLifelengthByPeriod(Aircraft aircraft, DateTime dateFrom, DateTime dateTo)
 		/// <summary>
 		/// Возвращает суммарный налет воздушного судна за указанный период
 		/// </summary>
@@ -204,7 +221,7 @@ namespace BusinessLayer.Calculator
 		}
 		#endregion
 
-		#region private Lifelength getFlightLifelengthForPeriod(Aircraft aircraft, DateTime fromDate, DateTime toDate)
+		#region private async Task<Lifelength> getFlightLifelengthForPeriod(Aircraft aircraft, DateTime fromDate, DateTime toDate)
 		/// <summary>
 		/// Возвращает налет воздушного судна за заданный интервал
 		/// </summary>
@@ -219,6 +236,285 @@ namespace BusinessLayer.Calculator
 			res.Substract(await getFlightLifelengthOnEndOfDay(aircraft, fromDate));
 			res.Days = Convert.ToInt32((toDate.Date.Ticks - fromDate.Date.Ticks) / TimeSpan.TicksPerDay);
 			return res;
+		}
+		#endregion
+
+		// Базовый агрегат
+
+		#region public async Task<Lifelength> GetFlightLifelengthIncludingThisFlight(BaseComponent baseComponent, AircraftFlight flight)
+
+		/// <summary> 
+		/// Возвращает налет базового агрегата после совершенного полета
+		/// </summary>
+		/// <param name="baseComponent"></param>
+		/// <param name="flight"></param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetFlightLifelengthIncludingThisFlight(BaseComponent baseComponent, AircraftFlight flight)
+		{
+			if (baseComponent == null) throw new Exception($"Flight {flight.Id} has no base component related");
+			var aircraft = await _aircraftRepository.GetAircraftByIdAsync(baseComponent.AircaraftId);
+			if (aircraft == null) throw new Exception($"Flight {flight.Id} has no aircraft related");
+
+			// Если это был последний полет за указанный день возвращаем налет вс на конец дня
+			if (flight.LDGTime < flight.TakeOffTime) return getFlightLifelengthOnEndOfDay(baseComponent, flight.FlightDate);
+
+			// Сначала получаем налет базовой детали, полученный днем ранее
+			var initial = await getFlightLifelengthOnEndOfDay(baseComponent, flight.FlightDate.Value.Date.AddDays(-1));
+			//TODO:(Evgenii Babak) Заметка для бага 598. Требуется учитывать актуальное состояние в этом методе для разрешения бага
+			//без учета актуального состояния initial будет LifeLenght.Zero если даты полета и установки базового агрегата совпадают
+			//требуется стори для изменения подхода в расчете наработки бд. Нужно избавиться от вычитания одного дня
+			var flights = await _aircraftFlightRepository.GetAircraftFlightsOnDate(aircraft.Id, flight.FlightDate.Value.Date).Where(f => f.AtlbRecordType != AtlbRecordType.Maintenance);
+
+			// Пробегаемся по всем полетам, которые идут до этого полета
+			foreach (var t in flights)
+			{
+				var add = await getFlightLifelength(t, baseComponent);
+				if (baseComponent.BaseComponentTypeId == BaseComponentType.APU)
+				{
+					initial.Add(new Lifelength(0, 1, (int?)(t.FlightTimeLifelength.TotalMinutes * aircraft.APUFH)));
+				}
+				else initial.Add(add);
+
+				// возвращаемся если дошли до заданного полета
+				if (t.ItemId == flight.Id) break;
+			}
+
+			// Календарь
+			initial.Days = GetDays(baseComponent.ManufactureDate.Value, flight.FlightDate.Value);
+
+			// initial хранит в себе налет вс на начало соответсвующего дня + все полеты по заданный включительно
+			return initial;
+		}
+		#endregion
+
+		#region public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseComponent baseComponent, DateTime date)
+
+		/// <summary>
+		/// Возвращает наработку базового агрегата на начало дня - без учета полетов воздушного судна и перемещений
+		/// </summary>
+		/// <param name="baseComponent"></param>
+		/// <param name="date"></param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseComponent baseComponent, DateTime date)
+		{
+			return await getFlightLifelengthOnStartOfDay(baseComponent, date);
+		}
+
+		#endregion
+
+		#region public Lifelength GetFlightLifelengthOnStartOfDay(BaseComponent baseComponent, DateTime date, FlightRegime flightRegime)
+
+		/// <summary>
+		/// Возвращает работу базового агрегата на начало дня в заданном режиме. (только для Engine, Propellers, APU)
+		/// </summary>
+		/// <param name="baseComponent">базовый агрегат></param>
+		/// <param name="date">Дата, на начало которой необходимо вернуть наработку</param>
+		/// <param name="flightRegime">режим работы агрегата</param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseComponent baseComponent, DateTime date, FlightRegime flightRegime)
+		{
+			//наработка по режимам работы расчитывается только для Двигателей, Пропеллеров и ВСУ
+			//по другим типам деталей наработка по режимам не ведется
+			if (baseComponent.BaseComponentTypeId != BaseComponentType.APU &&
+				baseComponent.BaseComponentTypeId != BaseComponentType.Engine &&
+				baseComponent.BaseComponentTypeId != BaseComponentType.Propeller)
+			{
+				return await getFlightLifelengthOnStartOfDay(baseComponent, date);
+			}
+
+			if (flightRegime == null)
+				flightRegime = FlightRegime.UNK;
+			if (flightRegime == FlightRegime.UNK)
+			{
+				//при режиме UNK возвращается наработка базовой детали во всех режимах
+				return await getFlightLifelengthOnStartOfDay(baseComponent, date);
+			}
+
+			// ресурс на момент производства равен нулю
+			date = date.Date;
+			if (date <= baseComponent.ManufactureDate) return Lifelength.Zero;
+
+			// если наработка уже подсчитана - возвращаем ее
+			var saved = baseComponent.LifelengthCalculated.GetLifelengthOnStartOfDay(date, flightRegime);
+			if (saved != null) return new Lifelength(saved);
+
+			// вычисляем результат
+			var res = getFlightLifelengthOnEndOfDay(baseComponent, date.AddDays(-1), flightRegime);
+
+			return new Lifelength(res);
+		}
+
+		#endregion
+
+		#region private async Task<Lifelength> getFlightLifelengthOnEndOfDay(BaseComponent baseComponent, DateTime effectiveDate)
+		/// <summary>
+		/// Возваращает наработку базового агрегата на конец заданной даты
+		/// </summary>
+		/// <param name="baseComponent"></param>
+		/// <param name="effectiveDate"></param>
+		/// <returns></returns>
+		private async Task<Lifelength> getFlightLifelengthOnEndOfDay(BaseComponent baseComponent, DateTime effectiveDate)
+		{
+			if (baseComponent == null) return Lifelength.Null;
+			// Сначала загружаем математический аппарат
+			Init();
+			
+			// Если это Frame воздушного судна, то возвращаем налет самого воздушного судна
+			if (baseComponent.BaseComponentTypeId == BaseComponentType.Frame)
+			{
+				var parentAircraft = await _aircraftRepository.GetAircraftByIdAsync(baseComponent.AircaraftId);
+				return await getFlightLifelengthOnEndOfDay(parentAircraft, effectiveDate);
+			}
+
+			// Возвращаем ноль на все, что раньше даты производства
+			if (effectiveDate < baseComponent.ManufactureDate) return Lifelength.Zero;
+
+			// Наработка базового агрегата на заданную дату считается 
+			// от момента последнего актуального состояния и дальше суммируя налеты ВС между перемещениями базового агрегата
+			var res = Lifelength.Zero;
+
+			var actualState = baseComponent.ActualStateRecords.GetLastKnownRecord(effectiveDate);
+
+			var llpRecord = baseComponent.ChangeLLPCategoryRecords.GetLast();
+
+			if (llpRecord != null && actualState != null)
+			{
+				res = new Lifelength(actualState.OnLifelength);
+			}
+			else if (llpRecord != null)
+				res = new Lifelength(llpRecord.OnLifelength);
+			else if (actualState != null)
+				res = new Lifelength(actualState.OnLifelength);
+
+			// Если мы не имеем один из параметров актуального состояния - берем его из наработки на предыдущий день
+			if (actualState != null && (actualState.OnLifelength.Cycles == null || actualState.OnLifelength.TotalMinutes == null))
+				res.CompleteNullParameters(await getFlightLifelengthOnEndOfDay(baseComponent, actualState.RecordDate.Value.Date.AddDays(-1)));
+			var transfers = (actualState != null) ? baseComponent.TransferRecords.GetRecords(actualState.RecordDate.Value.Date, effectiveDate) : baseComponent.TransferRecords.GetRecords(effectiveDate);
+
+			// Суммируем интервалы между перемещениями
+			if (transfers != null)
+				for (int i = 0; i < transfers.Length; i++)
+				{
+					var a = transfers[i].DestinationObjectType == SmartCoreType.Aircraft ? _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId) : null;
+					if (a == null) continue; // агрегат был помещен на склад, а склады не содержатся в коллекции воздушных судов
+
+					// в середине цикла берем дату перемещения, а в начале берем дату актуального состояния 
+					var dateFrom = i > 0 || actualState == null ? transfers[i].TransferDate : actualState.RecordDate.Value.Date;
+					// в конце берем дату dateTo, а в середине цикла дату следующего перемещения
+					var dateTo = i < transfers.Length - 1 ? transfers[i + 1].TransferDate : effectiveDate;
+
+					//если дата установки и dateTo одинаковы
+					if ((dateFrom == dateTo) && (dateTo == transfers[i].TransferDate))
+						continue;
+					// суммируем 
+					//Lifelength delta = GetLifelength(a, dateFrom, dateTo);
+
+					var delta = Lifelength.Zero;
+					var flights = await _aircraftFlightRepository.GetAircraftFlightsByAircraftIdAsync(a.Id);
+					if (baseComponent.BaseComponentTypeId == BaseComponentType.LandingGear)
+						delta = await getFlightLifelengthForPeriod(a, dateFrom, dateTo);
+					else if (baseComponent.BaseComponentTypeId == BaseComponentType.Propeller || baseComponent.BaseComponentTypeId == BaseComponentType.Engine)
+					{
+
+						var bdFlightLL = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom, dateTo);
+						var aircraftFlightLL = await getFlightLifelengthForPeriod(a, dateFrom, dateTo);
+
+						if (aircraftFlightLL.Cycles.HasValue && bdFlightLL.Cycles.HasValue && ((float)bdFlightLL.Cycles / (float)aircraftFlightLL.Cycles < 0.95) ||
+							aircraftFlightLL.Hours.HasValue && bdFlightLL.Hours.HasValue && ((float)bdFlightLL.Hours / (float)aircraftFlightLL.Hours < 0.95))
+							delta = aircraftFlightLL;
+						else delta = bdFlightLL;
+					}
+					else delta = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom, dateTo);
+
+					res.Add(delta);
+				}
+
+			//
+			res.Days = GetDays(baseComponent.ManufactureDate.Value, effectiveDate); // +1 т.к. вторая граница интервала включительно
+
+			// Сохраняем результат
+			baseComponent.LifelengthCalculated.SetLifelengthOnEndOfDay(effectiveDate, res);
+			//
+			return new Lifelength(res);
+		}
+		#endregion
+
+		#region private Lifelength getFlightLifelengthOnEndOfDay(BaseComponent baseComponent, DateTime effectiveDate, FlightRegime flightRegime)
+
+		/// <summary>
+		/// Возваращает работу базового агрегата в заданном режиме на конец заданной даты 
+		/// <br/>(только для Engine, Propellers, APU)
+		/// <br/>для агретатов другого типа вернет полную наработку
+		/// </summary>
+		/// <param name="baseComponent">базовый агрегат></param>
+		/// <param name="effectiveDate">дата, на которую необходимо вернуть наработку</param>
+		/// <param name="flightRegime">режим работы агрегата</param>
+		/// <returns></returns>
+		private async Task<Lifelength> getFlightLifelengthOnEndOfDay(BaseComponent baseComponent, DateTime effectiveDate, FlightRegime flightRegime)
+		{
+			if (baseComponent == null) return Lifelength.Null;
+			//наработка по режимам работы расчитывается только для Двигателей, Пропеллеров и ВСУ
+			//по другим типам деталей наработка по режимам не ведется
+			if (baseComponent.BaseComponentTypeId != BaseComponentType.APU &&
+				baseComponent.BaseComponentTypeId != BaseComponentType.Engine &&
+				baseComponent.BaseComponentTypeId != BaseComponentType.Propeller)
+			{
+				return getFlightLifelengthOnStartOfDay(baseComponent, effectiveDate);
+			}
+
+			if (flightRegime == null)
+				flightRegime = FlightRegime.UNK;
+			if (flightRegime == FlightRegime.UNK)
+			{
+				//при режиме UNK возвращается наработка базовой детали во всех режимах
+				return getFlightLifelengthOnStartOfDay(baseComponent, effectiveDate);
+			}
+
+			// Загрузка математического аппарата
+			Init();
+			// Возвращает ноль на все, что раньше даты производства
+			if (effectiveDate < baseComponent.ManufactureDate) return Lifelength.Zero;
+
+			// Наработка базового агрегата на заданную дату считается 
+			// от момента последнего актуального состояния и дальше суммируя налеты ВС между перемещениями базового агрегата
+
+			var actualState = baseComponent.ActualStateRecords.GetLastKnownRecord(effectiveDate, flightRegime);
+			var res = (actualState != null) ? new Lifelength(actualState.OnLifelength) : Lifelength.Zero;
+			// Если мы не имеем один из параметров актуального состояния - берем его из наработки на предыдущий день
+			if (actualState != null && (actualState.OnLifelength.Cycles == null || actualState.OnLifelength.TotalMinutes == null))
+				res.CompleteNullParameters(await getFlightLifelengthOnEndOfDay(baseComponent, actualState.RecordDate.Value.Date.AddDays(-1), flightRegime));
+			var transfers = (actualState != null) ? baseComponent.TransferRecords.GetRecords(actualState.RecordDate.Value.Date, effectiveDate) : baseComponent.TransferRecords.GetRecords(effectiveDate);
+
+			// Суммирование наработки между перемещениями
+			if (transfers != null)
+				for (int i = 0; i < transfers.Length; i++)
+				{
+					var a = transfers[i].DestinationObjectType == SmartCoreType.Aircraft ? _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId) : null;
+					if (a == null) continue; // агрегат был помещен на склад, а склады не содержатся в коллекции воздушных судов
+
+					// в середине цикла берем дату перемещения, а в начале берем дату актуального состояния 
+					var dateFrom = i > 0 || actualState == null ? transfers[i].TransferDate : actualState.RecordDate.Value.Date;
+					// в конце берем дату dateTo, а в середине цикла дату следующего перемещения
+					var dateTo = i < transfers.Length - 1 ? transfers[i + 1].TransferDate : effectiveDate;
+
+					//если дата установки и dateTo одинаковы
+					if ((dateFrom == dateTo) && (dateTo == transfers[i].TransferDate))
+						continue;
+
+					var flights = _aircraftFlightRepository.GetAircraftFlightsByAircraftIdAsync(a.Id);
+
+					// суммируем 
+					var delta = await getFlightLifelengthForPeriod(flights, baseComponent, dateFrom, dateTo, flightRegime);
+					res.Add(delta);
+				}
+
+			//
+			res.Days = GetDays(baseComponent.ManufactureDate.Value, effectiveDate); // +1 т.к. вторая граница интервала включительно
+
+			// Сохраняем результат
+			baseComponent.LifelengthCalculated.SetClosingLifelength(effectiveDate, flightRegime, res);
+			//
+			return new Lifelength(res);
 		}
 		#endregion
 
@@ -240,7 +536,7 @@ namespace BusinessLayer.Calculator
 		/// <param name="dateFrom">Начало интервала</param>
 		/// <param name="dateTo">Конец интервала</param>
 		/// <returns></returns>
-		private async Task<Lifelength> getFlightLifelengthByPeriod(List<AircraftFlight> flights, Component bd, DateTime dateFrom, DateTime dateTo)
+		private async Task<Lifelength> getFlightLifelengthByPeriod(List<AircraftFlight> flights, BaseComponent bd, DateTime dateFrom, DateTime dateTo)
 		{
 			var res = Lifelength.Zero;
 			if (bd == null) return res;
@@ -268,7 +564,7 @@ namespace BusinessLayer.Calculator
 		/// </summary>
 		/// <param name="bd"></param>
 		/// <returns></returns>
-		private async Task<Lifelength> getFlightLifelength(AircraftFlight flight, Component bd)
+		private async Task<Lifelength> getFlightLifelength(AircraftFlight flight, BaseComponent bd)
 		{
 			if (bd == null)
 				return Lifelength.Zero;

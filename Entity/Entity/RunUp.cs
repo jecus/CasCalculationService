@@ -6,7 +6,7 @@ namespace Entity.Entity
 	public class RunUp
 	{
 		[NotMapped]
-		public Component BaseComponent { get; set; }
+		public BaseComponent BaseComponent { get; set; }
 
 		#region public Lifelength Lifelength { get; }
 		/// <summary> 

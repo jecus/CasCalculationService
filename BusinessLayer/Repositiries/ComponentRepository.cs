@@ -14,9 +14,9 @@ namespace BusinessLayer.Repositiries
 		{
 			_db = db;
 		}
-		public async Task<Component> GetBaseComponentByIdAsync(int baseComponentId)
+		public async Task<BaseComponent> GetBaseComponentByIdAsync(int baseComponentId)
 		{
-			var baseComponent =  await _db.Components
+			var baseComponent =  await _db.BaseComponents
 				.AsNoTracking()
 				.OnlyActive()
 				.Include(i => i.ActualStateRecords)

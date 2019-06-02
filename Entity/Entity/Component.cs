@@ -12,10 +12,7 @@ namespace Entity.Entity
 
 		[Column("PartNumber")]
 		public string PartNumber { get; set; }
-
-		[Column("BaseComponentTypeId")]
-		public BaseComponentType BaseComponentTypeId { get; set; }
-
+		
 		[Column("ManufactureDate")]
 		public DateTime? ManufactureDate { get; set; }
 
