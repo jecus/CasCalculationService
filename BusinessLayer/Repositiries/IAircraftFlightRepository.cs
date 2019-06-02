@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Entity.Entity;
 
@@ -8,5 +9,6 @@ namespace BusinessLayer.Repositiries
 	{
 		Task<List<AircraftFlight>> GetAircraftFlightsByAircraftIdAsync(int aircraftId);
 		Task<AircraftFlight> GetAircraftFlightsByIdAsync(int flightId);
+		Task<List<AircraftFlight>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate);
 	}
 }

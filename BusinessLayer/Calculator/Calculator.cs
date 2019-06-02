@@ -140,7 +140,7 @@ namespace BusinessLayer.Calculator
 			var actual = aircraftFrame.ActualStateRecords.GetLastKnownRecord(date);
 			if (actual != null && actual.RecordDate.Value.Date == date)
 			{
-				res = new Lifelength(Lifelength.ConvertFromByteArray(actual.OnLifelength));
+				res = new Lifelength(actual.OnLifelength);
 
 				// Если мы не имеем один из параметров актуального состояния - берем его из наработки на предыдущий день
 				if (res.Cycles == null || res.TotalMinutes == null)
@@ -256,14 +256,15 @@ namespace BusinessLayer.Calculator
 			if (aircraft == null) throw new Exception($"Flight {flight.Id} has no aircraft related");
 
 			// Если это был последний полет за указанный день возвращаем налет вс на конец дня
-			if (flight.LDGTime < flight.TakeOffTime) return getFlightLifelengthOnEndOfDay(baseComponent, flight.FlightDate);
+			if (flight.LDGTime < flight.TakeOffTime) return getFlightLifelengthOnEndOfDay(baseComponent, flight.FlightDate.Value);
 
 			// Сначала получаем налет базовой детали, полученный днем ранее
 			var initial = await getFlightLifelengthOnEndOfDay(baseComponent, flight.FlightDate.Value.Date.AddDays(-1));
 			//TODO:(Evgenii Babak) Заметка для бага 598. Требуется учитывать актуальное состояние в этом методе для разрешения бага
 			//без учета актуального состояния initial будет LifeLenght.Zero если даты полета и установки базового агрегата совпадают
 			//требуется стори для изменения подхода в расчете наработки бд. Нужно избавиться от вычитания одного дня
-			var flights = await _aircraftFlightRepository.GetAircraftFlightsOnDate(aircraft.Id, flight.FlightDate.Value.Date).Where(f => f.AtlbRecordType != AtlbRecordType.Maintenance);
+			var fl = await _aircraftFlightRepository.GetAircraftFlightsOnDate(aircraft.Id, flight.FlightDate.Value.Date);
+			var flights = fl.Where(f => f.AtlbRecordType != AtlbRecordType.Maintenance);
 
 			// Пробегаемся по всем полетам, которые идут до этого полета
 			foreach (var t in flights)
@@ -276,7 +277,7 @@ namespace BusinessLayer.Calculator
 				else initial.Add(add);
 
 				// возвращаемся если дошли до заданного полета
-				if (t.ItemId == flight.Id) break;
+				if (t.Id == flight.Id) break;
 			}
 
 			// Календарь
@@ -382,7 +383,7 @@ namespace BusinessLayer.Calculator
 				res = new Lifelength(actualState.OnLifelength);
 			}
 			else if (llpRecord != null)
-				res = new Lifelength(llpRecord.OnLifelength);
+				res = new Lifelength(llpRecord.OnLifeLength);
 			else if (actualState != null)
 				res = new Lifelength(actualState.OnLifelength);
 
@@ -395,7 +396,7 @@ namespace BusinessLayer.Calculator
 			if (transfers != null)
 				for (int i = 0; i < transfers.Length; i++)
 				{
-					var a = transfers[i].DestinationObjectType == SmartCoreType.Aircraft ? _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId) : null;
+					var a = transfers[i].DestinationObjectType == SmartCoreType.Aircraft ? _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId.Value) : null;
 					if (a == null) continue; // агрегат был помещен на склад, а склады не содержатся в коллекции воздушных судов
 
 					// в середине цикла берем дату перемещения, а в начале берем дату актуального состояния 
@@ -412,19 +413,19 @@ namespace BusinessLayer.Calculator
 					var delta = Lifelength.Zero;
 					var flights = await _aircraftFlightRepository.GetAircraftFlightsByAircraftIdAsync(a.Id);
 					if (baseComponent.BaseComponentTypeId == BaseComponentType.LandingGear)
-						delta = await getFlightLifelengthForPeriod(a, dateFrom, dateTo);
+						delta = await getFlightLifelengthForPeriod(a, dateFrom.Value, dateTo.Value);
 					else if (baseComponent.BaseComponentTypeId == BaseComponentType.Propeller || baseComponent.BaseComponentTypeId == BaseComponentType.Engine)
 					{
 
-						var bdFlightLL = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom, dateTo);
-						var aircraftFlightLL = await getFlightLifelengthForPeriod(a, dateFrom, dateTo);
+						var bdFlightLL = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom.Value, dateTo.Value);
+						var aircraftFlightLL = await getFlightLifelengthForPeriod(a, dateFrom.Value, dateTo.Value);
 
 						if (aircraftFlightLL.Cycles.HasValue && bdFlightLL.Cycles.HasValue && ((float)bdFlightLL.Cycles / (float)aircraftFlightLL.Cycles < 0.95) ||
 							aircraftFlightLL.Hours.HasValue && bdFlightLL.Hours.HasValue && ((float)bdFlightLL.Hours / (float)aircraftFlightLL.Hours < 0.95))
 							delta = aircraftFlightLL;
 						else delta = bdFlightLL;
 					}
-					else delta = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom, dateTo);
+					else delta = await getFlightLifelengthByPeriod(flights, baseComponent, dateFrom.Value, dateTo.Value);
 
 					res.Add(delta);
 				}

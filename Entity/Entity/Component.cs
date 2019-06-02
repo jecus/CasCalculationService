@@ -20,6 +20,8 @@ namespace Entity.Entity
 		public bool IsBaseComponent { get; set; }
 
 		public ICollection<ActualStateRecord> ActualStateRecords { get; set; }
+		public ICollection<TransferRecord> TransferRecords { get; set; }
+		public ICollection<ComponentLLPCategoryChangeRecord> ChangeLLPCategoryRecords { get; set; }
 
 
 		public String Position

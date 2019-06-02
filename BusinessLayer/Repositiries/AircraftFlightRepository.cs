@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
@@ -39,6 +41,15 @@ namespace BusinessLayer.Repositiries
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == flightId);
+		}
+
+		public async Task<List<AircraftFlight>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate)
+		{
+			return await _db.AircraftFlights
+				.AsNoTracking()
+				.OnlyActive()
+				.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate)
+				.ToListAsync();
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using Entity.Models;
 
 namespace Entity.Entity
 {
@@ -9,6 +10,10 @@ namespace Entity.Entity
 	{
 		[Column("BaseComponentTypeId")]
 		public BaseComponentType BaseComponentTypeId { get; set; }
-		
+
+
+		[NotMapped]
+		public List<Lifelength> LifelengthCalculated { get; set; }
+
 	}
 }
