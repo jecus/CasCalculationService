@@ -293,6 +293,33 @@ namespace Entity.Models
 
 		#endregion
 
+		#region  public void SetClosingLifelength(DateTime date, Lifelength value)
+
+		/// <summary>
+		/// Устанавливает подсчитанную наработку на конец дня на заданном режиме
+		/// </summary>
+		/// <param name="date">День на который необходимо вернуть наработку</param>
+		/// <param name="flightRegime">режим работы</param>
+		/// <param name="value">значение подсчитанной наработки</param>
+		/// <returns></returns>
+		public void SetClosingLifelength(DateTime date, FlightRegime flightRegime, Lifelength value)
+		{
+			this[date, flightRegime ?? FlightRegime.UNK] = value;
+		}
+		#endregion
+
+		#region public Lifelength GetLifelengthOnStartOfDay(DateTime date)
+		/// <summary>
+		/// Подсчитанная наработка на начало дня
+		/// </summary>
+		/// <param name="date">День на который необходимо вернуть наработку</param>
+		/// <returns></returns>
+		public Lifelength GetLifelengthOnStartOfDay(DateTime date)
+		{
+			return GetLifelengthOnStartOfDay(date, FlightRegime.UNK);
+		}
+		#endregion
+
 		public override string ToString()
 		{
 			string sh = Hours != null && Hours != 0 ? Hours + "FH" : "";

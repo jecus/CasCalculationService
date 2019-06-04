@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BusinessLayer.Calculator.Views;
+using BusinessLayer.Views;
 using Entity.Entity;
 
 namespace BusinessLayer.Calculator
 {
 	public static class Extentions
 	{
-		public static ActualStateRecord GetLastKnownRecord(this ICollection<ActualStateRecord> records, DateTime date)
+		public static ActualStateRecordView GetLastKnownRecord(this ICollection<ActualStateRecordView> records, DateTime date)
 		{
 			return records
 				.OrderByDescending(i => i.RecordDate)
@@ -20,27 +22,27 @@ namespace BusinessLayer.Calculator
 			return queryable.Where(i => !i.IsDeleted);
 		}
 
-		public static ComponentLLPCategoryChangeRecord GetLast(this ICollection<ComponentLLPCategoryChangeRecord> Items)
+		public static ComponentLLPCategoryChangeRecordView GetLast(this ICollection<ComponentLLPCategoryChangeRecordView> Items)
 		{
 			return Items.Count == 0 ? null : Items.OrderBy(r => r.RecordDate).Last();
 		}
 
-		public static TransferRecord[] GetRecords(this ICollection<TransferRecord> items ,DateTime dateFrom, DateTime dateTo)
+		public static TransferRecordView[] GetRecords(this ICollection<TransferRecordView> items ,DateTime dateFrom, DateTime dateTo)
 		{
 			dateFrom = dateFrom.Date;
 			dateTo = dateTo.Date;
 			var array = items.ToArray();
-			var res = new List<TransferRecord>();
+			var res = new List<TransferRecordView>();
 
 			// Если все записи сделаны раньше dateFrom
-			if (array[array.Length - 1].TransferDate.Value.Date <= dateFrom)
+			if (array[array.Length - 1].TransferDate.Date <= dateFrom)
 			{
 				// В этом случае возвращаем только одну запись
 				res.Add(array[array.Length - 1]);
 				return res.ToArray();
 			}
 
-			return items.Where(i => i.TransferDate.Value.Date >= dateFrom && i.TransferDate.Value.Date <= dateTo).ToArray();
+			return items.Where(i => i.TransferDate.Date >= dateFrom && i.TransferDate.Date <= dateTo).ToArray();
 		}
 	}
 }

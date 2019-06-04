@@ -1,12 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Entity.Entity;
 using Entity.Models;
 
-namespace Entity.Entity
+namespace BusinessLayer.Views
 {
-	public class RunUp : BaseEntity
+	public class RunUpView : BaseView
 	{
-		[NotMapped]
-		public BaseComponent BaseComponent { get; set; }
+		public BaseComponentView BaseComponent { get; set; }
 
 		#region public Lifelength Lifelength { get; }
 		/// <summary> 
@@ -17,5 +16,11 @@ namespace Entity.Entity
 			get { return new Lifelength(null, 1, 0 /*TotalMinutes*/); }
 		}
 		#endregion
+
+		public RunUpView(RunUp source)
+		{
+			Id = source.Id;
+			BaseComponent = new BaseComponentView(source.BaseComponent);
+		}
 	}
 }

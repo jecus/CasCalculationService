@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Entity.Entity;
+using BusinessLayer.Views;
 
 namespace BusinessLayer.Repositiries
 {
 	public interface IAircraftFlightRepository
 	{
-		Task<List<AircraftFlight>> GetAircraftFlightsByAircraftIdAsync(int aircraftId);
-		Task<AircraftFlight> GetAircraftFlightsByIdAsync(int flightId);
-		Task<List<AircraftFlight>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate);
+		Task<List<AircraftFlightView>> GetAircraftFlightsByAircraftIdAsync(int aircraftId);
+		Task<AircraftFlightView> GetAircraftFlightsByIdAsync(int flightId);
+		Task<List<AircraftFlightView>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate);
 	}
 }

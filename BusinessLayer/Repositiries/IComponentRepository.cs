@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Entity.Entity;
+using BusinessLayer.Views;
 
 namespace BusinessLayer.Repositiries
 {
 	public interface IComponentRepository
 	{
-		Task<BaseComponent> GetBaseComponentByIdAsync(int baseComponentId);
+		Task<BaseComponentView> GetBaseComponentByIdAsync(int baseComponentId);
 
 	}
 }

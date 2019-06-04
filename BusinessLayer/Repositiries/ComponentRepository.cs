@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Views;
 using Entity;
-using Entity.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLayer.Repositiries
@@ -14,7 +14,7 @@ namespace BusinessLayer.Repositiries
 		{
 			_db = db;
 		}
-		public async Task<BaseComponent> GetBaseComponentByIdAsync(int baseComponentId)
+		public async Task<BaseComponentView> GetBaseComponentByIdAsync(int baseComponentId)
 		{
 			var baseComponent =  await _db.BaseComponents
 				.AsNoTracking()
@@ -23,7 +23,7 @@ namespace BusinessLayer.Repositiries
 				.FirstOrDefaultAsync(i => i.Id == baseComponentId);
 
 			baseComponent.AircaraftId = _db.GetDestinationObjectIdQueryFromQuery(GetQueryForParentAircraft(baseComponentId));
-			return baseComponent;
+			return new BaseComponentView(baseComponent);
 		}
 
 

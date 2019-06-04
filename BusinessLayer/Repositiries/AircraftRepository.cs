@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Views;
 using Entity;
-using Entity.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLayer.Repositiries
@@ -15,7 +15,7 @@ namespace BusinessLayer.Repositiries
 			_db = db;
 		}
 
-		public async Task<Aircraft> GetAircraftByIdAsync(int aircraftId)
+		public async Task<AircraftView> GetAircraftByIdAsync(int aircraftId)
 		{
 			var frameId =  _db.GetIdFromQuery(GetQueryFrameId(aircraftId));
 			var aircraft = await _db.Aircrafts
@@ -23,7 +23,7 @@ namespace BusinessLayer.Repositiries
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == aircraftId);
 			aircraft.AircraftFrameId = frameId;
-			return aircraft;
+			return new AircraftView(aircraft);
 		}
 
 

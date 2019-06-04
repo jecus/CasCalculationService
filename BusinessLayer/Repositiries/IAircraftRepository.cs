@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Entity.Entity;
+using BusinessLayer.Views;
 
 namespace BusinessLayer.Repositiries
 {
 	public interface IAircraftRepository
 	{
-		Task<Aircraft> GetAircraftByIdAsync(int aircraftId);
+		Task<AircraftView> GetAircraftByIdAsync(int aircraftId);
 	}
 }
