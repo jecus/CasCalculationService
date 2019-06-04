@@ -1,4 +1,5 @@
-﻿using Entity.Entity;
+﻿using BusinessLayer.Vendors;
+using Entity.Entity;
 using Entity.Models;
 
 namespace BusinessLayer.Views

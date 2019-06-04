@@ -11,9 +11,5 @@ namespace Entity.Entity
 		[Column("BaseComponentTypeId")]
 		public BaseComponentType BaseComponentTypeId { get; set; }
 
-
-		[NotMapped]
-		public List<Lifelength> LifelengthCalculated { get; set; }
-
 	}
 }

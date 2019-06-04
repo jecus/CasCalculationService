@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Text;
+using Entity;
+using Entity.Models;
 
-namespace Entity.Models
+namespace BusinessLayer.Vendors
 {
 	public class Lifelength
 	{
@@ -279,6 +281,42 @@ namespace Entity.Models
 
 		#endregion
 
+		#region public void Add(LifelengthSubResource sub, int source)
+		/// <summary>
+		/// Прибавляет заданную наработку к указанному параметру
+		/// </summary>
+		public void Add(LifelengthSubResource subResource, int source)
+		{
+			// прибавляем к this
+			// null + cycles = cycles
+			// cycles + null = cycles
+			// null + null = null
+			// cycles + cycles = cycles + cycles
+			switch (subResource)
+			{
+				case LifelengthSubResource.Minutes:
+					if (TotalMinutes == null) TotalMinutes = source;
+					else TotalMinutes += source;
+					break;
+				case LifelengthSubResource.Hours:
+					if (TotalMinutes == null) TotalMinutes = source * 60;
+					else TotalMinutes += source * 60;
+					break;
+				case LifelengthSubResource.Cycles:
+					if (Cycles == null) Cycles = source;
+					else Cycles += source;
+					break;
+				case LifelengthSubResource.Calendar:
+					if (Days == null) Days = source;
+					else Days += source;
+					break;
+				default:
+					break;
+			}
+		}
+
+		#endregion
+
 		#region public void Substract(Lifelength lifelength)
 
 		/// <summary>
@@ -293,32 +331,6 @@ namespace Entity.Models
 
 		#endregion
 
-		#region  public void SetClosingLifelength(DateTime date, Lifelength value)
-
-		/// <summary>
-		/// Устанавливает подсчитанную наработку на конец дня на заданном режиме
-		/// </summary>
-		/// <param name="date">День на который необходимо вернуть наработку</param>
-		/// <param name="flightRegime">режим работы</param>
-		/// <param name="value">значение подсчитанной наработки</param>
-		/// <returns></returns>
-		public void SetClosingLifelength(DateTime date, FlightRegime flightRegime, Lifelength value)
-		{
-			this[date, flightRegime ?? FlightRegime.UNK] = value;
-		}
-		#endregion
-
-		#region public Lifelength GetLifelengthOnStartOfDay(DateTime date)
-		/// <summary>
-		/// Подсчитанная наработка на начало дня
-		/// </summary>
-		/// <param name="date">День на который необходимо вернуть наработку</param>
-		/// <returns></returns>
-		public Lifelength GetLifelengthOnStartOfDay(DateTime date)
-		{
-			return GetLifelengthOnStartOfDay(date, FlightRegime.UNK);
-		}
-		#endregion
 
 		public override string ToString()
 		{

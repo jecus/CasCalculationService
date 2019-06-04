@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator.Dictionaries;
 using BusinessLayer.Repositiries;
+using BusinessLayer.Vendors;
 using BusinessLayer.Views;
 using Entity;
 using Entity.Entity;
@@ -534,7 +535,7 @@ namespace BusinessLayer.Calculator
 			if (transfers != null)
 				for (int i = 0; i < transfers.Length; i++)
 				{
-					var a = transfers[i].DestinationObjectType == (int)SmartCoreType.Aircraft ? _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId.Value) : null;
+					var a = transfers[i].DestinationObjectType == (int)SmartCoreType.Aircraft ? await _aircraftRepository.GetAircraftByIdAsync(transfers[i].DestinationObjectId.Value) : null;
 					if (a == null) continue; // агрегат был помещен на склад, а склады не содержатся в коллекции воздушных судов
 
 					// в середине цикла берем дату перемещения, а в начале берем дату актуального состояния 
@@ -737,7 +738,7 @@ namespace BusinessLayer.Calculator
 				return Lifelength.Zero;
 
 			var res = Lifelength.Zero;
-			List<RunUp> runs = null;
+			List<RunUpView> runs = null;
 
 			if (bd.BaseComponentTypeId == BaseComponentType.Engine || bd.BaseComponentTypeId == BaseComponentType.APU)
 				runs = flight.RunupsCollection.GetByBaseComponent(bd).ToList();
@@ -810,7 +811,7 @@ namespace BusinessLayer.Calculator
 		/// </summary>
 		/// <param name="bd"></param>
 		/// <returns></returns>
-		private async Task<Lifelength> getFlightLifelength(AircraftFlight flight, BaseComponent bd)
+		private async Task<Lifelength> getFlightLifelength(AircraftFlightView flight, BaseComponent bd)
 		{
 			if (bd == null)
 				return Lifelength.Zero;
@@ -830,7 +831,7 @@ namespace BusinessLayer.Calculator
 				return Lifelength.Zero;
 
 			var res = Lifelength.Zero;
-			List<RunUp> runs = null;
+			List<RunUpView> runs = null;
 
 			if (bd.BaseComponentTypeId == BaseComponentType.Engine || bd.BaseComponentTypeId == BaseComponentType.APU)
 				runs = flight.RunupsCollection/*GetByBaseComponent(bd)*/.ToList();

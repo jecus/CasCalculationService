@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BusinessLayer.Calculator.Dictionaries;
 using BusinessLayer.Calculator.Views;
+using BusinessLayer.Vendors;
 using Entity;
 using Entity.Entity;
 using Entity.Models;
@@ -11,7 +13,7 @@ namespace BusinessLayer.Views
 	{
 		public BaseComponentType BaseComponentTypeId { get; set; }
 
-		public List<Lifelength> LifelengthCalculated { get; set; }
+		public LifelengthCollection LifelengthCalculated { get; set; }
 
 		public BaseComponentView(BaseComponent source)
 		{
@@ -23,9 +25,7 @@ namespace BusinessLayer.Views
 			ActualStateRecords = source.ActualStateRecords.Select(i => new ActualStateRecordView(i)).ToList();
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
-			LifelengthCalculated = source.LifelengthCalculated;
 			BaseComponentTypeId = source.BaseComponentTypeId;
-
 		}
 	}
 }

@@ -36,41 +36,10 @@ namespace Entity.Entity
 		public int Cycles { get; set; }
 
 		[Column("CancelReasonId")]
-		public Reason CancelReason { get; set; }
+		public int CancelReasonId { get; set; }
 
 		[NotMapped]
 		public List<RunUp> RunupsCollection { get; set; }
-
-		#region public Lifelength FlightTimeLifelength
-
-		/// <summary> 
-		/// Возвращает наработку на основе FlightTime(Ldg - TakeOff) за заданный полет
-		/// </summary>
-		[NotMapped]
-		public Lifelength FlightTimeLifelength
-		{
-			get { return new Lifelength(null, Cycles, FlightTimeTotalMinutes); }
-		}
-
-		#endregion
-
-		#region public int FlightTimeTotalMinutes
-
-		/// <summary>
-		/// Возвращает время полета воздушного судна
-		/// </summary>
-		[NotMapped]
-			public int FlightTimeTotalMinutes
-			{
-				get
-				{
-					int x = LDGTime - TakeOffTime;
-					if (x < 0) x += 24 * 60;
-					return x;
-				}
-			}
-
-			#endregion
 
 	}
 }

@@ -23,7 +23,7 @@ namespace BusinessLayer.Views
 
 		public string Position
 		{
-			get { return /*TransferRecords.GetLast() != null ? TransferRecords.GetLast().Position :*/ ""; }
+			get { return TransferRecords.GetLast() != null ? TransferRecords.GetLast().Position : ""; }
 		}
 
 		public ComponentView(Component source)
