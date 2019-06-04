@@ -17,9 +17,12 @@ namespace BusinessLayer.Repositiries
 		public async Task<BaseComponentView> GetBaseComponentByIdAsync(int baseComponentId)
 		{
 			var baseComponent =  await _db.BaseComponents
+				.Include(i => i.ActualStateRecords)
+				.Include(i => i.ChangeLLPCategoryRecords)
+				.Include(i => i.TransferRecords)
+				.Include(i => i.Regimes)
 				.AsNoTracking()
 				.OnlyActive()
-				.Include(i => i.ActualStateRecords)
 				.FirstOrDefaultAsync(i => i.Id == baseComponentId);
 
 			baseComponent.AircaraftId = _db.GetDestinationObjectIdQueryFromQuery(GetQueryForParentAircraft(baseComponentId));

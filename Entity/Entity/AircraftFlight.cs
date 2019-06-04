@@ -41,5 +41,7 @@ namespace Entity.Entity
 		[NotMapped]
 		public List<RunUp> RunupsCollection { get; set; }
 
+		public ICollection<EngineTimeInRegime> Regimes { get; set; }
+
 	}
 }

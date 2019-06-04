@@ -464,7 +464,7 @@ namespace BusinessLayer.Calculator
 			                    bd.BaseComponentTypeId == BaseComponentType.Propeller ||
 			                    flight.PowerUnitTimeInRegimeCollection.Count > 0)) return res;
 
-			List<EngineTimeInRegime> ptrs = null;
+			List<EngineTimeInRegimeView> ptrs = null;
 			if (bd.BaseComponentTypeId == BaseComponentType.Engine
 			    || bd.BaseComponentTypeId == BaseComponentType.APU)
 			{
@@ -473,13 +473,13 @@ namespace BusinessLayer.Calculator
 			}
 			else if (bd.BaseComponentTypeId == BaseComponentType.Propeller)
 			{
-				ptrs = flight.PowerUnitTimeInRegimeCollection.Where(r => r.BaseComponent.BaseComponentType == BaseComponentType.Engine
+				ptrs = flight.PowerUnitTimeInRegimeCollection.Where(r => r.BaseComponent.BaseComponentTypeId == BaseComponentType.Engine
 				                                                         && r.FlightRegime == flightRegime
 				                                                         && r.BaseComponent.Position.Trim() == bd.Position.Trim()).ToList();
 			}
 			if (ptrs != null)
 			{
-				foreach (EngineTimeInRegime t in ptrs)
+				foreach (var t in ptrs)
 					res.Add(LifelengthSubResource.Minutes, (int)t.TimeInRegime.TotalMinutes);
 			}
 			return res;

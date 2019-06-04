@@ -11,5 +11,7 @@ namespace Entity.Entity
 		[Column("BaseComponentTypeId")]
 		public BaseComponentType BaseComponentTypeId { get; set; }
 
+		public ICollection<EngineTimeInRegime> Regimes { get; set; }
+
 	}
 }

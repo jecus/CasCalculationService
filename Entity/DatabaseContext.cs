@@ -8,6 +8,7 @@ namespace Entity
 	public class DatabaseContext : DbContext
 	{
 		public DbSet<AircraftFlight> AircraftFlights { get; set; }
+		public DbSet<EngineTimeInRegime> EngineTimeInRegimes { get; set; }
 		public DbSet<ATLB> Atlbs { get; set; }
 		public DbSet<Aircraft> Aircrafts { get; set; }
 		public DbSet<Component> Components { get; set; }
@@ -37,10 +38,15 @@ namespace Entity
 				.HasMany(i => i.ActualStateRecords).WithOne(i => i.Component).HasForeignKey(i => i.ComponentId);
 			modelBuilder.Entity<Component>()
 				.HasMany(i => i.ChangeLLPCategoryRecords).WithOne(i => i.Component).HasForeignKey(i => i.ParentId);
+			modelBuilder.Entity<BaseComponent>()
+				.HasMany(i => i.Regimes).WithOne(i => i.Component).HasForeignKey(i => i.EngineId);
 			modelBuilder.Entity<Component>()
 				.HasDiscriminator<bool>("IsBaseComponent")
 				.HasValue<BaseComponent>(true)
 				.HasValue<Component>(false);
+
+			modelBuilder.Entity<AircraftFlight>()
+				.HasMany(i => i.Regimes).WithOne(i => i.AircraftFlight).HasForeignKey(i => i.FlightId);
 		}
 
 		#endregion

@@ -37,7 +37,7 @@ namespace BusinessLayer.Views
 		/// <summary> 
 		/// Возвращает наработку на основе FlightTime(Ldg - TakeOff) за заданный полет
 		/// </summary>
-		
+
 		public Lifelength FlightTimeLifelength
 		{
 			get { return new Lifelength(null, Cycles, FlightTimeTotalMinutes); }
@@ -60,6 +60,8 @@ namespace BusinessLayer.Views
 			}
 		}
 
+		public List<EngineTimeInRegimeView> PowerUnitTimeInRegimeCollection { get; set; }
+
 		#endregion
 
 		public AircraftFlightView(AircraftFlight source)
@@ -74,7 +76,8 @@ namespace BusinessLayer.Views
 			LDGTime = source.LDGTime;
 			AtlbRecordType = source.AtlbRecordType;
 			Cycles = source.Cycles;
-			RunupsCollection = source.RunupsCollection.Select(i => new RunUpView(i));
+			RunupsCollection = source.RunupsCollection.Select(i => new RunUpView(i)).ToList();
+			PowerUnitTimeInRegimeCollection = source.Regimes.Select(i => new EngineTimeInRegimeView(i)).ToList();
 		}
 	}
 }

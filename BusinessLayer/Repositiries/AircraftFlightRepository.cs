@@ -28,6 +28,7 @@ namespace BusinessLayer.Repositiries
 			var ids = atlbs.Select(i => i.Id).ToList();
 
 			var res = await _db.AircraftFlights
+				.Include(i => i.RunupsCollection)
 				.AsNoTracking()
 				.OnlyActive()
 				.Where(i => ids.Contains(i.ATLBID))
@@ -39,6 +40,7 @@ namespace BusinessLayer.Repositiries
 		public async Task<AircraftFlightView> GetAircraftFlightsByIdAsync(int flightId)
 		{
 			var res = await _db.AircraftFlights
+				.Include(i => i.RunupsCollection)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == flightId);
@@ -49,6 +51,7 @@ namespace BusinessLayer.Repositiries
 		public async Task<List<AircraftFlightView>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate)
 		{
 			var res = await _db.AircraftFlights
+				.Include(i => i.RunupsCollection)
 				.AsNoTracking()
 				.OnlyActive()
 				.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate)
