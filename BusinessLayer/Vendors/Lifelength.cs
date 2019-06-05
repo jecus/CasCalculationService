@@ -202,46 +202,6 @@ namespace BusinessLayer.Vendors
 		}
 		#endregion
 
-		#region public static Lifelength ConvertFromByteArray(byte[] data)
-		/// <summary>
-		/// Конвертирует данные из БД в Lifelength
-		/// </summary>
-		/// <param name="data"></param>
-		public static Lifelength ConvertFromByteArray(byte[] data)
-		{
-
-			Lifelength item = new Lifelength();
-
-			byte[] binaryData = data;
-			if (null == binaryData) return null;
-
-			if (binaryData == null || binaryData.Length != SerializedDataLength)
-				return null;//на случай если -1 пришел
-			//throw new ArgumentException("Data cannot be converted to Lifelength");
-
-			item.Cycles = DbTypes.Int32FromByteArray(binaryData, 1);
-
-			var calendar = DbTypes.Int64FromByteArray(binaryData, 5);
-			var cal = new TimeSpan(calendar);
-
-			item.CalendarSpan = new CalendarSpan(cal.Days, (CalendarTypes)cal.Milliseconds);
-
-			var ticks = DbTypes.Int64FromByteArray(binaryData, 13);
-			var ts = new TimeSpan(ticks);
-			item.TotalMinutes = ts.Minutes + ((int)ts.TotalHours) * 60;
-
-			if ((binaryData[0] & 1) == 0)
-				item.Days = null;
-			if ((binaryData[0] >> 1 & 1) == 0)
-				item.Cycles = null;
-			if ((binaryData[0] >> 2 & 1) == 0)
-				item.Hours = null;
-
-			return item;
-		}
-
-		#endregion
-
 		#region public void CompleteNullParameters (Lifelength source)
 		/// <summary>
 		/// Дополняет пустые параметры текущего объекта параметрами из источника
@@ -329,6 +289,102 @@ namespace BusinessLayer.Vendors
 			Add(lifelength2);
 		}
 
+		#endregion
+
+		#region public bool IsNullOrZero()
+		/// <summary> 
+		/// Метод возвратит true если все три параметра наработки (ресурса) пусты или равны 0
+		/// </summary>
+		/// <returns></returns>
+		public bool IsNullOrZero()
+		{
+			// cycles && hours && days == null
+			if ((Cycles == null || Cycles == 0) &&
+			    (Days == null || Days == 0) &&
+			    (TotalMinutes == null || TotalMinutes == 0)) return true;
+
+			return false;
+		}
+		#endregion
+
+		/*
+         * Методы
+         */
+		#region public void Resemble(Lifelength sample)
+		/// <summary>
+		/// Сделать похожим на заданный ресурс. Т.е. если не заданы часы - сделать часы n/a и т.д.
+		/// </summary>
+		/// <param name="sample"></param>
+		public void Resemble(Lifelength sample)
+		{
+			if (sample.TotalMinutes == null) TotalMinutes = null;
+			if (sample.Cycles == null) Cycles = null;
+			if (sample.Days == null) Days = null;
+		}
+		#endregion
+
+		#region public static Lifelength ConvertFromByteArray(byte[] data)
+		/// <summary>
+		/// Конвертирует данные из БД в Lifelength
+		/// </summary>
+		/// <param name="data"></param>
+		public static Lifelength ConvertFromByteArray(byte[] data)
+		{
+
+			Lifelength item = new Lifelength();
+
+			byte[] binaryData = data;
+			if (null == binaryData) return null;
+
+			if (binaryData == null || binaryData.Length != SerializedDataLength)
+				return null;//на случай если -1 пришел
+			//throw new ArgumentException("Data cannot be converted to Lifelength");
+
+			item.Cycles = DbTypes.Int32FromByteArray(binaryData, 1);
+
+			var calendar = DbTypes.Int64FromByteArray(binaryData, 5);
+			var cal = new TimeSpan(calendar);
+
+			item.CalendarSpan = new CalendarSpan(cal.Days, (CalendarTypes)cal.Milliseconds);
+
+			var ticks = DbTypes.Int64FromByteArray(binaryData, 13);
+			var ts = new TimeSpan(ticks);
+			item.TotalMinutes = ts.Minutes + ((int)ts.TotalHours) * 60;
+
+			if ((binaryData[0] & 1) == 0)
+				item.Days = null;
+			if ((binaryData[0] >> 1 & 1) == 0)
+				item.Cycles = null;
+			if ((binaryData[0] >> 2 & 1) == 0)
+				item.Hours = null;
+
+			return item;
+		}
+
+		#endregion
+
+		/*
+         * Арифметика 
+         */
+		#region public bool IsGreaterByAnyParameter(Lifelength lifelength)
+		/// <summary>
+		/// Метод проверяет, является ли данная наработка больше заданной по любому из трех параметров
+		/// </summary>
+		/// <param name="lifelength"></param>
+		/// <returns></returns>
+		public bool IsGreaterByAnyParameter(Lifelength lifelength)
+		{
+			// 10, 10, 10 > 5, 5, 5
+			// 10, 10, 10 > 5, 20, 5
+			//Cycles
+			if (Cycles != null && lifelength.Cycles != null && Cycles > lifelength.Cycles) return true;
+			// TotalMinutes
+			if (TotalMinutes != null && lifelength.TotalMinutes != null && TotalMinutes > lifelength.TotalMinutes) return true;
+			// Days
+			if (Days != null && lifelength.Days != null && Days > lifelength.Days) return true;
+
+			return false;
+		}
 		#endregion
 
 

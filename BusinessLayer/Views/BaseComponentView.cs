@@ -22,6 +22,8 @@ namespace BusinessLayer.Views
 			PartNumber = source.PartNumber;
 			ManufactureDate = source.ManufactureDate.Value;
 			IsBaseComponent = source.IsBaseComponent;
+			LLPMark = source.LLPMark;
+			LLPCategories = source.LLPCategories;
 			ActualStateRecords = source.ActualStateRecords.Select(i => new ActualStateRecordView(i)).ToList();
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();

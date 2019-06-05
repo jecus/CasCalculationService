@@ -19,14 +19,15 @@ namespace Entity.Entity
 		[Column("IsBaseComponent")]
 		public bool IsBaseComponent { get; set; }
 
+		[Column("LLPMark")]
+		public bool LLPMark { get; set; }
+
+		[Column("LLPCategories")]
+		public bool LLPCategories { get; set; }
+
 		public ICollection<ActualStateRecord> ActualStateRecords { get; set; }
 		public ICollection<TransferRecord> TransferRecords { get; set; }
 		public ICollection<ComponentLLPCategoryChangeRecord> ChangeLLPCategoryRecords { get; set; }
 
-
-		public String Position
-		{
-			get { return /*TransferRecords.GetLast() != null ? TransferRecords.GetLast().Position :*/ ""; }
-		}
 	}
 }

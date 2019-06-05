@@ -18,6 +18,9 @@ namespace Entity.Entity
 		[Column("DestinationObjectType")]
 		public int? DestinationObjectType { get; set; }
 
+		[Column("Position")]
+		public string Position { get; set; }
+
 		#region Navigation Property
 
 		public Component Component { get; set; }

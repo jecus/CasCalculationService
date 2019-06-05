@@ -63,6 +63,11 @@ namespace BusinessLayer.Calculator
 			return items.Where(i => i.TransferDate.Date >= dateFrom && i.TransferDate.Date <= dateTo).ToArray();
 		}
 
+		public static TransferRecordView GetLast(this List<TransferRecordView> Items)
+		{
+			return Items.Count == 0 ? null : Items.OrderBy(r => r.TransferDate).Last();
+		}
+
 		#region public T[] GetRecords(DateTime toDate)
 		/// <summary>
 		/// Возвращает записи до указанной даты

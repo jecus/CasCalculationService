@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BusinessLayer.Calculator;
 using BusinessLayer.Calculator.Views;
+using BusinessLayer.Vendors;
 using Entity.Entity;
 
 namespace BusinessLayer.Views
 {
-	public class ComponentView : BaseView
+	public class ComponentView : BaseView, IDirective
 	{
 		public int AircaraftId { get; set; }
 
@@ -15,6 +17,10 @@ namespace BusinessLayer.Views
 		public DateTime ManufactureDate { get; set; }
 
 		public bool IsBaseComponent { get; set; }
+
+		public bool LLPMark { get; set; }
+
+		public bool LLPCategories { get; set; }
 
 		public List<ActualStateRecordView> ActualStateRecords { get; set; }
 		public List<TransferRecordView> TransferRecords { get; set; }
@@ -33,6 +39,8 @@ namespace BusinessLayer.Views
 			PartNumber = source.PartNumber;
 			ManufactureDate = source.ManufactureDate.Value;
 			IsBaseComponent = source.IsBaseComponent;
+			LLPMark = source.LLPMark;
+			LLPCategories = source.LLPCategories;
 			ActualStateRecords = source.ActualStateRecords.Select(i => new ActualStateRecordView(i)).ToList();
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();

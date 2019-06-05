@@ -9,6 +9,7 @@ namespace CalculationService.Extentions
 		public static IServiceCollection AddRepositories(this IServiceCollection services)
 		{
 			services.AddScoped<ICalculator, Calculator>();
+			services.AddScoped<IPerformanceCalculator, PerformanceCalculator>();
 			services.AddScoped<IAircraftRepository, AircraftRepository>();
 			services.AddScoped<IComponentRepository, ComponentRepository>();
 			services.AddScoped<IAircraftFlightRepository, AircraftFlightRepository>();

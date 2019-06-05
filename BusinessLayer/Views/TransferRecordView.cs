@@ -13,12 +13,15 @@ namespace BusinessLayer.Views
 
 		public int? DestinationObjectType { get; set; }
 
+		public string Position { get; set; }
+
 
 		public TransferRecordView(TransferRecord source)
 		{
 			Id = source.Id;
 			ParentID = source.ParentID;
 			TransferDate = source.TransferDate.Value;
+			Position = source.Position;
 			DestinationObjectId = source.DestinationObjectId;
 			DestinationObjectType = source.DestinationObjectType;
 		}
