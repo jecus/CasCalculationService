@@ -252,9 +252,9 @@ namespace BusinessLayer.Calculator
 
 						np.WarrantlyRemains.Resemble(np.LimitOverdue);
 					}
-					else if (directive is ComponentDirective)
+					else if (directive is ComponentDirectiveView)
 					{
-						np.WarrantlyRemains = new Lifelength(((ComponentDirective)directive).Threshold.Warranty);
+						np.WarrantlyRemains = new Lifelength(((ComponentDirectiveView)directive).Threshold.Warranty);
 						np.WarrantlyRemains.Substract(current); // remains = next - current
 
 						np.WarrantlyRemains.Resemble(np.LimitOverdue);

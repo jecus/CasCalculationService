@@ -420,6 +420,43 @@ namespace BusinessLayer.Vendors
 
 		#endregion
 
+		#region public bool IsLessByAnyParameter(Lifelength lifelength)
+		/// <summary>
+		/// Метод проверяет, является ли данная наработка меньше заданной по любому из трех параметров
+		/// </summary>
+		/// <param name="lifelength"></param>
+		/// <returns></returns>
+		public bool IsLessByAnyParameter(Lifelength lifelength)
+		{
+			//Cycles
+			if (Cycles != null && lifelength.Cycles != null && Cycles < lifelength.Cycles) return true;
+			// TotalMinutes
+			if (TotalMinutes != null && lifelength.TotalMinutes != null && TotalMinutes < lifelength.TotalMinutes) return true;
+			// Days
+			if (Days != null && lifelength.Days != null && Days < lifelength.Days) return true;
+
+			return false;
+		}
+		#endregion
+
+		#region public bool IsLess(Lifelength lifelength)
+
+		/// <summary>
+		/// Метод проверяет, является ли данная наработка строго меньшей заданной по всем трем параметрам
+		/// </summary>
+		/// <param name="lifelength"></param>
+		/// <param name="strictCompare"></param>
+		/// <returns></returns>
+		public bool IsLess(Lifelength lifelength, bool strictCompare = true)
+		{
+			if (Cycles != null && lifelength.Cycles != null && Cycles < lifelength.Cycles &&
+			    TotalMinutes != null && lifelength.TotalMinutes != null && TotalMinutes < lifelength.TotalMinutes &&
+			    Days != null && lifelength.Days != null && Days < lifelength.Days) return true;
+			return false;
+		}
+
+		#endregion
+
 
 		public override string ToString()
 		{
