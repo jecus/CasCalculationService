@@ -29,6 +29,20 @@ namespace BusinessLayer.Repositiries
 			return new BaseComponentView(baseComponent);
 		}
 
+		public async Task<ComponentView> GetComponentByIdAsync(int componentId)
+		{
+			var component = await _db.BaseComponents
+				.Include(i => i.ActualStateRecords)
+				.Include(i => i.ChangeLLPCategoryRecords)
+				.Include(i => i.TransferRecords)
+				.Include(i => i.Regimes)
+				.AsNoTracking()
+				.OnlyActive()
+				.FirstOrDefaultAsync(i => i.Id == componentId);
+
+			return new ComponentView(component);
+		}
+
 
 		private string GetQueryForParentAircraft(int baseComponentId)
 		{

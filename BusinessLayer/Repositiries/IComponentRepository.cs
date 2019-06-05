@@ -6,6 +6,7 @@ namespace BusinessLayer.Repositiries
 	public interface IComponentRepository
 	{
 		Task<BaseComponentView> GetBaseComponentByIdAsync(int baseComponentId);
+		Task<ComponentView> GetComponentByIdAsync(int componentId);
 
 	}
 }
