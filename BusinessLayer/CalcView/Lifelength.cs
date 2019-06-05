@@ -363,6 +363,7 @@ namespace BusinessLayer.Vendors
 
 		#endregion
 
+
 		/*
          * Арифметика 
          */
@@ -385,6 +386,38 @@ namespace BusinessLayer.Vendors
 
 			return false;
 		}
+		#endregion
+
+		#region public bool IsOverdue()
+		/// <summary>
+		/// Просрочен ли ресурс (т.е. меньше ли он нуля)
+		/// </summary>
+		/// <returns></returns>
+		public bool IsOverdue()
+		{
+			if (Cycles != null && Cycles <= 0) return true;
+			if (TotalMinutes != null && TotalMinutes <= 0) return true;
+			if (Days != null && Days <= 0) return true;
+			//
+			return false;
+		}
+		#endregion
+
+		#region public bool IsAllOverdue()
+		/// <summary>
+		/// Просрочен ли ресурс по всем параметрам (условие проверки Whichever Later)
+		/// </summary>
+		/// <returns></returns>
+		public bool IsAllOverdue()
+		{
+			// Если все параметры неопределены - ресурс не просрочен
+			if (Cycles == null && TotalMinutes == null && Days == null) return false;
+			// Если хотя бы один параметр больше нуля - ресруср не просрочен
+			if ((Cycles != null && Cycles > 0) || (TotalMinutes != null && TotalMinutes > 0) || (Days != null && Days > 0)) return false;
+			// Ресурс просрочен
+			return true;
+		}
+
 		#endregion
 
 

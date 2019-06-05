@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BusinessLayer.Calculator;
 using BusinessLayer.Calculator.Views;
+using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
 using Entity.Entity;
 

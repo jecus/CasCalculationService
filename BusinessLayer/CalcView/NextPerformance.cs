@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Text;
+using BusinessLayer.Calculator.Dictionaries;
+using BusinessLayer.CalcView;
+using BusinessLayer.Views;
 using Entity;
 
 namespace BusinessLayer.Vendors
@@ -105,5 +108,27 @@ namespace BusinessLayer.Vendors
 		public Lifelength BeforeForecastResourceRemain { get; set; }
 		#endregion
 
+		#region public ConditionState Condition { get; set; }
+		/// <summary>
+		/// Текущее состояние задачи
+		/// </summary>
+		public ConditionState Condition { get; set; }
+		#endregion
+
+		#region public IDirective Parent { get; set; }
+
+		private IDirective _parent;
+		/// <summary>
+		/// Родительская задача
+		/// </summary>
+		public IDirective Parent
+		{
+			get { return _parent; }
+			set
+			{
+				_parent = value;
+			}
+		}
+		#endregion
 	}
 }
