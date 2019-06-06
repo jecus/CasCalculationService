@@ -23,6 +23,8 @@ namespace BusinessLayer.Views
 
 		public bool LLPCategories { get; set; }
 
+		public AverageUtilization AverageUtilization { get; set; }
+
 		public List<ActualStateRecordView> ActualStateRecords { get; set; }
 		public List<TransferRecordView> TransferRecords { get; set; }
 		public List<ComponentLLPCategoryChangeRecordView> ChangeLLPCategoryRecords { get; set; }
@@ -47,7 +49,7 @@ namespace BusinessLayer.Views
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
 			ComponentDirectives = source.ComponentDirectives.Select(i => new ComponentDirectiveView(i)).ToList();
-
+			AverageUtilization = AverageUtilization.ConvertFromByteArray(source.AverageUtilization);
 		}
 
 		public ComponentView()

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.CalcView;
 using BusinessLayer.Views;
 using Entity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,11 @@ namespace BusinessLayer.Repositiries
 				.FirstOrDefaultAsync(i => i.Id == aircraftId);
 			aircraft.AircraftFrameId = frameId;
 			return new AircraftView(aircraft);
+		}
+
+		public Task<AircraftView> GetParentAircraftAsync(IDirective source)
+		{
+			throw new System.NotImplementedException();
 		}
 
 

@@ -14,6 +14,7 @@ namespace BusinessLayer.Views
 		public int? DestinationObjectType { get; set; }
 
 		public string Position { get; set; }
+		public int PerformanceNum { get; set; }
 
 
 		public TransferRecordView(TransferRecord source)
@@ -24,6 +25,7 @@ namespace BusinessLayer.Views
 			Position = source.Position;
 			DestinationObjectId = source.DestinationObjectId;
 			DestinationObjectType = source.DestinationObjectType;
+			PerformanceNum = source.PerformanceNum;
 		}
 	}
 }

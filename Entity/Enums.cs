@@ -62,4 +62,16 @@
 	{
 		Aircraft = 7,
 	}
+
+	public enum UtilizationInterval : int
+	{
+		/// <summary>
+		/// Среднестатистическая налет задан за месяц
+		/// </summary>
+		Monthly = 0,
+		/// <summary>
+		/// Среднестатистический налет задан за день
+		/// </summary>
+		Dayly = 1,
+	}
 }

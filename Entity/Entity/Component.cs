@@ -25,6 +25,9 @@ namespace Entity.Entity
 		[Column("LLPCategories")]
 		public bool LLPCategories { get; set; }
 
+		[Column("AverageUtilization")]
+		public byte[] AverageUtilization { get; set; }
+
 		public ICollection<ActualStateRecord> ActualStateRecords { get; set; }
 		public ICollection<TransferRecord> TransferRecords { get; set; }
 		public ICollection<ComponentLLPCategoryChangeRecord> ChangeLLPCategoryRecords { get; set; }

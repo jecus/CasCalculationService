@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator.Dictionaries;
 using BusinessLayer.CalcView;
+using BusinessLayer.Repositiries;
 using BusinessLayer.Vendors;
 using BusinessLayer.Views;
 using Entity;
@@ -12,10 +13,14 @@ namespace BusinessLayer.Calculator
 	public class PerformanceCalculator : IPerformanceCalculator
 	{
 		private readonly ICalculator _calculator;
+		private readonly IMTOPCalculator _mtopCalculator;
+		private readonly IAverageUtilizationRepository _averageUtilizationRepository;
 
-		public PerformanceCalculator(ICalculator calculator)
+		public PerformanceCalculator(ICalculator calculator, IMTOPCalculator mtopCalculator, IAverageUtilizationRepository averageUtilizationRepository)
 		{
 			_calculator = calculator;
+			_mtopCalculator = mtopCalculator;
+			_averageUtilizationRepository = averageUtilizationRepository;
 		}
 
 		#region public void GetNextPerformance(IDirective directive, ForecastData forecast = null)
@@ -36,14 +41,16 @@ namespace BusinessLayer.Calculator
 				return;
 
 			IThreshold threshold;
-			if (directive is MaintenanceDirective && ((MaintenanceDirective)directive).MaintenanceCheck != null)
-				threshold = ((MaintenanceDirective)directive).MaintenanceCheck.Threshold;
+			if (directive is MaintenanceDirectiveView && ((MaintenanceDirectiveView)directive).MaintenanceCheck != null)
+				threshold = ((MaintenanceDirectiveView)directive).MaintenanceCheck.Threshold;
 			else threshold = directive.Threshold;
 
 			var last = Lifelength.Null;
 			var current = await _calculator.GetFlightLifelengthOnEndOfDay(directive.LifeLengthParent, DateTime.Today);
 			NextPerformance np;
 			NextPerformance lastNp;
+
+			var au = await _averageUtilizationRepository.GetAverageUtillization(directive);
 
 			for (;;)
 			{
@@ -83,11 +90,11 @@ namespace BusinessLayer.Calculator
 							{
 								sinceNew = threshold.FirstPerformanceSinceNew;
 
-								if (directive is MaintenanceDirective)
+								if (directive is MaintenanceDirectiveView)
 								{
-									var d = directive as MaintenanceDirective;
+									var d = directive as MaintenanceDirectiveView;
 
-									_mtopCalculator.CalculateDirective(d, au);
+									await _mtopCalculator.CalculateDirective(d, au);
 									sinceNew = d.PhaseThresh;
 								}
 							}
@@ -120,11 +127,11 @@ namespace BusinessLayer.Calculator
 							last = directive.LastPerformance.OnLifelength;
 
 
-							if (directive is MaintenanceDirective)
+							if (directive is MaintenanceDirectiveView)
 							{
-								var d = directive as MaintenanceDirective;
+								var d = directive as MaintenanceDirectiveView;
 
-								_mtopCalculator.CalculateDirective(d, au);
+								await _mtopCalculator.CalculateDirective(d, au);
 								int lastPerfNum = directive.LastPerformance.PerformanceNum <= 0 ? 1 : directive.LastPerformance.PerformanceNum;
 								np.PerformanceNum = lastPerfNum + directive.NextPerformances.Count + 1;
 								np.PerformanceSource = new Lifelength(last);
@@ -163,11 +170,11 @@ namespace BusinessLayer.Calculator
 						lastNp = directive.NextPerformances.Last();
 						last = lastNp.PerformanceSource;
 
-						if (directive is MaintenanceDirective)
+						if (directive is MaintenanceDirectiveView)
 						{
-							var d = directive as MaintenanceDirective;
+							var d = directive as MaintenanceDirectiveView;
 
-							_mtopCalculator.CalculateDirective(d, au);
+							await _mtopCalculator.CalculateDirective(d, au);
 
 							np.PerformanceNum = lastNp.PerformanceNum + 1;
 							np.PerformanceSource = new Lifelength(last);

@@ -85,5 +85,8 @@ namespace BusinessLayer.Vendors
 		Lifelength RepeatNotification { get; set; }
 
 		#endregion
+
+		Lifelength Warranty { get; set; }
+		Lifelength WarrantyNotification { get; set; }
 	}
 }

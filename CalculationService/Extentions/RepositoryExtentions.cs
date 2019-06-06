@@ -10,9 +10,11 @@ namespace CalculationService.Extentions
 		{
 			services.AddScoped<ICalculator, Calculator>();
 			services.AddScoped<IPerformanceCalculator, PerformanceCalculator>();
+			services.AddScoped<IMTOPCalculator, MTOPCalculator>();
 			services.AddScoped<IAircraftRepository, AircraftRepository>();
 			services.AddScoped<IComponentRepository, ComponentRepository>();
 			services.AddScoped<IAircraftFlightRepository, AircraftFlightRepository>();
+			services.AddScoped<IAverageUtilizationRepository, AverageUtilizationRepository>();
 			return services;
 		}
 	}

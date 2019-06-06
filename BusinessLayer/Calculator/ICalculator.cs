@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator.Dictionaries;
+using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
 using BusinessLayer.Views;
 using Entity.Models;
@@ -9,6 +10,11 @@ namespace BusinessLayer.Calculator
 {
 	public interface ICalculator
 	{
+		DateTime GetMaxDate(DateTime dateTime1, DateTime dateTime2);
+		DateTime GetManufactureDate(BaseView source);
+		DateTime GetStartDate(IDirective directive);
+
+
 		Task<Lifelength> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime date);
 		Task<Lifelength> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime date);
 		Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate);

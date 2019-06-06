@@ -27,6 +27,12 @@ namespace BusinessLayer.CalcView
 		IThreshold Threshold { get; set; }
 		#endregion
 
+		#region DirectiveRecordView LastPerformance { get; set; }
+
+		DirectiveRecordView LastPerformance { get; set; }
+
+		#endregion
+
 		#region Boolean IsClosed { get; set; }
 		///
 		/// Логический флаг, показывающий, закрыта ли директива

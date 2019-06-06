@@ -2,6 +2,7 @@
 using System.Linq;
 using BusinessLayer.Calculator.Dictionaries;
 using BusinessLayer.Calculator.Views;
+using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
 using Entity;
 using Entity.Entity;
@@ -28,6 +29,7 @@ namespace BusinessLayer.Views
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
 			BaseComponentTypeId = source.BaseComponentTypeId;
+			AverageUtilization = AverageUtilization.ConvertFromByteArray(source.AverageUtilization);
 		}
 	}
 }

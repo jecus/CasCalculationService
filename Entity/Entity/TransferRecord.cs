@@ -21,6 +21,9 @@ namespace Entity.Entity
 		[Column("Position")]
 		public string Position { get; set; }
 
+		[Column("PerformanceNum")]
+		public int PerformanceNum { get; set; }
+
 		#region Navigation Property
 
 		public Component Component { get; set; }

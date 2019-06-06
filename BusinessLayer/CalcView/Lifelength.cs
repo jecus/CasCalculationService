@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using BusinessLayer.Calculator;
 using Entity;
 using Entity.Models;
 
@@ -277,6 +278,40 @@ namespace BusinessLayer.Vendors
 
 		#endregion
 
+		#region public void Add(Lifelength lifelength)
+
+		/// <summary>
+		/// Прибавляет заданную наработку к уже существующей
+		/// </summary>
+		/// <param name="from"></param>
+		/// <param name="lifelength"></param>
+		public void Add(DateTime from, Lifelength lifelength)
+		{
+			// прибавляем к this
+			// null + cycles = cycles
+			// cycles + null = cycles
+			// null + null = null
+			// cycles + cycles = cycles + cycles
+			if (Cycles == null && lifelength.Cycles != null) Cycles = lifelength.Cycles;
+			else if (Cycles != null && lifelength.Cycles != null) Cycles += lifelength.Cycles;
+
+			if (TotalMinutes == null && lifelength.TotalMinutes != null) TotalMinutes = lifelength.TotalMinutes;
+			else if (TotalMinutes != null && lifelength.TotalMinutes != null) TotalMinutes += lifelength.TotalMinutes;
+
+			if (CalendarValue == null && lifelength.CalendarValue != null)
+			{
+				DateTime to = from.AddCalendarSpan(lifelength.CalendarSpan);
+				Days = (to - from).Days;
+			}
+			else if (Days != null && lifelength.Days != null)
+			{
+				DateTime to = from.AddCalendarSpan(lifelength.CalendarSpan);
+				Days += (to - from).Days;
+			}
+		}
+
+		#endregion
+
 		#region public void Substract(Lifelength lifelength)
 
 		/// <summary>
@@ -304,6 +339,50 @@ namespace BusinessLayer.Vendors
 			    (TotalMinutes == null || TotalMinutes == 0)) return true;
 
 			return false;
+		}
+		#endregion
+
+		#region public void SetMax(Lifelength candidate)
+		/// <summary>
+		/// По выходу объект будет представлять содержитать максимальные ресурсы от обоих объектов (whichever later)
+		/// </summary>
+		/// <param name="candidate"></param>
+		public void SetMax(Lifelength candidate)
+		{
+			// Если у кандидата циклы больше чем у текущего объекта - присваиваем максимальные циклы
+			if (candidate.Cycles != null && (Cycles == null || Cycles < candidate.Cycles))
+				Cycles = candidate.Cycles;
+
+			// то же по часам 
+			if (candidate.TotalMinutes != null && (TotalMinutes == null || TotalMinutes < candidate.TotalMinutes))
+				TotalMinutes = candidate.TotalMinutes;
+
+			// то же по календарю
+			if (candidate.Days != null && (Days == null || Days < candidate.Days))
+				Days = candidate.Days;
+
+		}
+		#endregion
+
+		#region public void SetMin(Lifelength candidate)
+		/// <summary>
+		/// По выходу объект будет представлять содержитать минимальных ресурсов от обоих объектов (whichever first)
+		/// </summary>
+		/// <param name="candidate"></param>
+		public void SetMin(Lifelength candidate)
+		{
+			// Если у кандидата циклы меньше чем у текущего объекта - присваиваем минимальные циклы
+			if (candidate.Cycles != null && (Cycles == null || Cycles > candidate.Cycles))
+				Cycles = candidate.Cycles;
+
+			// то же по часам 
+			if (candidate.TotalMinutes != null && (TotalMinutes == null || TotalMinutes > candidate.TotalMinutes))
+				TotalMinutes = candidate.TotalMinutes;
+
+			// то же по календарю
+			if (candidate.Days != null && (Days == null || Days > candidate.Days))
+				Days = candidate.Days;
+
 		}
 		#endregion
 

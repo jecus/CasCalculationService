@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator.Dictionaries;
+using BusinessLayer.CalcView;
 using BusinessLayer.Repositiries;
 using BusinessLayer.Vendors;
 using BusinessLayer.Views;
@@ -27,6 +28,104 @@ namespace BusinessLayer.Calculator
 			_componentRepository = componentRepository;
 		}
 
+
+		/*
+         * Расчет дат
+         */
+
+		#region public DateTime GetMaxDate(DateTime dateTime1, DateTime dateTime2)
+
+		/// <summary>
+		/// Возвращает максимальную дату из двух переданных дат
+		/// </summary>
+		/// <param name="dateTime1"></param>
+		/// <param name="dateTime2"></param>
+		/// <returns></returns>
+		public DateTime GetMaxDate(DateTime dateTime1, DateTime dateTime2)
+		{
+			return GetMaxDate(new[] { dateTime1, dateTime2 });
+		}
+
+		#endregion
+
+		#region private DateTime GetMaxDate(DateTime[] dateTimes)
+
+		/// <summary>
+		/// Возвращает максимальную дату из массива переданных дат
+		/// </summary>
+		/// <param name="dateTimes"></param>
+		/// <returns></returns>
+		private DateTime GetMaxDate(DateTime[] dateTimes)
+		{
+			return dateTimes.Max();
+		}
+
+		#endregion
+
+		#region public DateTime GetManufactureDate(BaseSmartCoreObject source)
+
+		/// <summary>
+		/// Возвращает дату производства базового агрегата, агрегата или самолета
+		/// </summary>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		public DateTime GetManufactureDate(BaseView source)
+		{
+			return getManufactureDate(source);
+		}
+
+		#endregion
+
+		#region private DateTime getManufactureDate(BaseEntityObject source)
+
+		/// <summary>
+		/// Возвращает дату производства базового агрегата, агрегата или самолета
+		/// </summary>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		private DateTime getManufactureDate(BaseView source)
+		{
+			if (source == null) return DateTimeExtend.GetCASMinDateTime();
+			if (source is AircraftView) return ((AircraftView)source).ManufactureDate;
+			if (source is BaseComponentView) return ((BaseComponentView)source).ManufactureDate;
+			if (source is ComponentView) return ((ComponentView)source).ManufactureDate;
+			return DateTimeExtend.GetCASMinDateTime();
+		}
+
+		#endregion
+
+		#region public DateTime GetStartDate(IDirective directive)
+		public DateTime GetStartDate(IDirective directive)
+		{
+			if (directive == null || directive.Threshold == null) return DateTimeExtend.GetCASMinDateTime();
+
+			DateTime? sinceNew = null;
+			DateTime? sinceEffDate = null;
+
+			if (directive.Threshold.FirstPerformanceSinceEffectiveDate != null &&
+			   !directive.Threshold.FirstPerformanceSinceEffectiveDate.IsNullOrZero())
+			{
+				sinceEffDate = directive.Threshold.EffectiveDate;
+			}
+			if (directive.Threshold.FirstPerformanceSinceNew != null &&
+			   !directive.Threshold.FirstPerformanceSinceNew.IsNullOrZero())
+			{
+				sinceNew = getManufactureDate(directive.LifeLengthParent);
+			}
+
+			if (sinceNew != null && sinceEffDate != null)
+			{
+				if (directive.Threshold.FirstPerformanceConditionType == ThresholdConditionType.WhicheverFirst)
+				{
+					return sinceNew < sinceEffDate ? sinceNew.Value : sinceEffDate.Value;
+				}
+				return sinceNew > sinceEffDate ? sinceNew.Value : sinceEffDate.Value;
+			}
+			if (sinceNew != null) return sinceNew.Value;
+			if (sinceEffDate != null) return sinceEffDate.Value;
+			return DateTimeExtend.GetCASMinDateTime();
+		}
+		#endregion
 
 		// Воздушное судно
 

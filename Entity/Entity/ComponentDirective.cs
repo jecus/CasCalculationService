@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entity.Entity
@@ -16,6 +17,8 @@ namespace Entity.Entity
 		[Column("ComponentId")]
 		public int? ComponentId { get; set; }
 
+
+		public ICollection<DirectiveRecord> PerformanceRecords { get; set; }
 
 		#region Navigation Property
 

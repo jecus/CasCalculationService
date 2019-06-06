@@ -105,5 +105,66 @@ namespace BusinessLayer.CalcView
 			return item;
 		}
 		#endregion
+
+		#region public static MaintenanceDirectiveThreshold ConvertFromByteArray(byte[] data)
+		public static int SerializedDataLengthMaintenance
+		{
+			get
+			{
+				return sizeof(long) + sizeof(bool) * 3 + Lifelength.SerializedDataLength * 5;
+			}
+		}
+		/// <summary>
+		/// Получает свойства из массива байт
+		/// </summary>
+		/// <param name="data"></param>
+		public static Threshold ConvertForCMaintenanceDirective(byte[] data)
+		{
+			var item = new Threshold();
+
+			if (data == null) data = new byte[SerializedDataLengthMaintenance];
+			int currentPos = 0;
+
+			byte[] serializedEffectivityDate = new byte[sizeof(long)];
+			Array.Copy(data, currentPos, serializedEffectivityDate, 0, sizeof(long));
+			item.EffectiveDate = new DateTime(DbTypes.Int64FromByteArray(serializedEffectivityDate, 0));
+			currentPos += sizeof(long);
+
+			byte[] serializedPerformSinceNew = new byte[Lifelength.SerializedDataLength];
+			Array.Copy(data, currentPos, serializedPerformSinceNew, 0, Lifelength.SerializedDataLength);
+			item.FirstPerformanceSinceNew = Lifelength.ConvertFromByteArray(serializedPerformSinceNew);
+			currentPos += Lifelength.SerializedDataLength;
+
+			byte[] serializedSinceEffectivityLifelength = new byte[Lifelength.SerializedDataLength];
+			Array.Copy(data, currentPos, serializedSinceEffectivityLifelength, 0, Lifelength.SerializedDataLength);
+			item.FirstPerformanceSinceEffectiveDate = Lifelength.ConvertFromByteArray(serializedSinceEffectivityLifelength);
+			currentPos += Lifelength.SerializedDataLength;
+
+			byte[] serializedNotification = new byte[Lifelength.SerializedDataLength];
+			Array.Copy(data, currentPos, serializedNotification, 0, Lifelength.SerializedDataLength);
+			item.FirstNotification = Lifelength.ConvertFromByteArray(serializedNotification);
+			currentPos += Lifelength.SerializedDataLength;
+
+			item.FirstPerformanceConditionType = data[currentPos] == 1 ? ThresholdConditionType.WhicheverLater : ThresholdConditionType.WhicheverFirst;
+			currentPos += 1;
+
+			item.PerformRepeatedly = data[currentPos] == 1;
+			currentPos += 1;
+
+			byte[] serializedrepeatPerform = new byte[Lifelength.SerializedDataLength];
+			Array.Copy(data, currentPos, serializedrepeatPerform, 0, Lifelength.SerializedDataLength);
+			item.RepeatInterval = Lifelength.ConvertFromByteArray(serializedrepeatPerform);
+			currentPos += Lifelength.SerializedDataLength;
+
+			byte[] serializedRepeatNotificaction = new byte[Lifelength.SerializedDataLength];
+			Array.Copy(data, currentPos, serializedRepeatNotificaction, 0, Lifelength.SerializedDataLength);
+			item.RepeatNotification = Lifelength.ConvertFromByteArray(serializedRepeatNotificaction);
+			currentPos += Lifelength.SerializedDataLength;
+
+			item.RepeatPerformanceConditionType = data[currentPos] == 1 ? ThresholdConditionType.WhicheverLater : ThresholdConditionType.WhicheverFirst;
+
+			return item;
+		}
+		#endregion
 	}
 }
