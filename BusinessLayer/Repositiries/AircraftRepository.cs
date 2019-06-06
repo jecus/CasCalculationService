@@ -27,11 +27,51 @@ namespace BusinessLayer.Repositiries
 			return new AircraftView(aircraft);
 		}
 
-		public Task<AircraftView> GetParentAircraftAsync(IDirective source)
+		public async Task<AircraftView> GetParentAircraftAsync(IDirective source)
 		{
-			throw new System.NotImplementedException();
+			if (source is MaintenanceDirectiveView)
+			{
+				var aircraftId = _db.GetIdFromQuery(GetQueryFrameId(((MaintenanceDirectiveView)source).Id));
+				return await GetAircraftByIdAsync(aircraftId);
+			}
+			if (source is ComponentView)
+			{
+				var baseComponentId = _db.GetIdFromQuery(GetQueryComponentAircraft(((ComponentView)source).Id));
+				var aircraftId = _db.GetIdFromQuery(GetQueryComponentAircraft(baseComponentId));
+				return await GetAircraftByIdAsync(aircraftId);
+			}
+			if(source is ComponentDirectiveView)
+			{
+				var aircraftId = _db.GetIdFromQuery(GetQueryComponentDirectiveAircraft(((ComponentDirectiveView)source).Id));
+				return await GetAircraftByIdAsync(aircraftId);
+			}
+			return null;
 		}
 
+		private string GetQueryMpdAircraft(int mpdId)
+		{
+			return $@"select top 1 TransferRecords.DestinationObjectId from dbo.TransferRecords where IsDeleted=0 
+					and ParentID = (select mpd.ComponentId from MaintenanceDirectives mpd where mpd.ItemId = {mpdId} )
+						order by dbo.TransferRecords.TransferDate desc";
+		}
+
+		private string GetQueryComponentAircraft(int componentId)
+		{
+			return $@"select top 1 TransferRecords.DestinationObjectId 
+                     from dbo.TransferRecords 
+                      where IsDeleted=0 and ParentID = {componentId} order by dbo.TransferRecords.TransferDate desc	";
+		}
+
+
+
+		private string GetQueryComponentDirectiveAircraft(int cdId)
+		{
+			return $@"select top 1 TransferRecords.DestinationObjectId from dbo.TransferRecords where IsDeleted=0 
+					and ParentID = (select top 1 TransferRecords.DestinationObjectId from dbo.TransferRecords where IsDeleted=0 
+					and ParentID = (select ComponentId from ComponentDirectives where ItemID = {cdId})
+						order by dbo.TransferRecords.TransferDate desc)
+						order by dbo.TransferRecords.TransferDate desc";
+		}
 
 		private string GetQueryFrameId(int aircraftId)
 		{
