@@ -29,7 +29,7 @@ namespace BusinessLayer.CalcView
 
 		#region DirectiveRecordView LastPerformance { get; set; }
 
-		DirectiveRecordView LastPerformance { get; set; }
+		DirectiveRecordView LastPerformance { get; }
 
 		#endregion
 

@@ -11,6 +11,9 @@ namespace Entity.Entity
 		[MaxLength(116)]
 		public byte[] Threshold { get; set; }
 
+		[Column("IsClosed")]
+		public bool IsClosed { get; set; }
+
 		public ICollection<DirectiveRecord> PerformanceRecords { get; set; }
 	}
 }

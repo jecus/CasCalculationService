@@ -17,6 +17,9 @@ namespace Entity.Entity
 		[Column("ComponentId")]
 		public int? ComponentId { get; set; }
 
+		[Column("IsClosed")]
+		public bool IsClosed { get; set; }
+
 
 		public ICollection<DirectiveRecord> PerformanceRecords { get; set; }
 

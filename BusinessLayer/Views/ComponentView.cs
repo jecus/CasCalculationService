@@ -56,5 +56,22 @@ namespace BusinessLayer.Views
 		{
 			
 		}
+
+		#region Implementation of IDirective
+
+		public BaseView LifeLengthParent => this;
+
+		private List<NextPerformance> _nextPerformances;
+		public List<NextPerformance> NextPerformances => _nextPerformances ?? (_nextPerformances = new List<NextPerformance>());
+
+		public IThreshold Threshold { get; set; }
+		public DirectiveRecordView LastPerformance => null;
+		public bool IsClosed { get; set; }
+		public void ResetMathData()
+		{
+			NextPerformances.Clear();
+		}
+
+		#endregion
 	}
 }

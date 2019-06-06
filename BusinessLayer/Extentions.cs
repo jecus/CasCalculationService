@@ -68,6 +68,11 @@ namespace BusinessLayer.Calculator
 			return Items.Count == 0 ? null : Items.OrderBy(r => r.TransferDate).Last();
 		}
 
+		public static DirectiveRecordView GetLast(this List<DirectiveRecordView> Items)
+		{
+			return Items.Count == 0 ? null : Items.OrderBy(r => r.RecordDate).Last();
+		}
+
 		#region public T[] GetRecords(DateTime toDate)
 		/// <summary>
 		/// Возвращает записи до указанной даты
