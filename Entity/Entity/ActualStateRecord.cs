@@ -16,10 +16,6 @@ namespace Entity.Entity
 		[Column("OnLifelength")]
 		public byte[] OnLifelengthByte { get; set; }
 
-		[NotMapped]
-		public Lifelength OnLifelength => Lifelength.ConvertFromByteArray(OnLifelengthByte);
-
-
 		[Column("RecordDate")]
 		public DateTime? RecordDate { get; set; }
 

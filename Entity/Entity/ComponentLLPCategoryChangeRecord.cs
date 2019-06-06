@@ -19,9 +19,6 @@ namespace Entity.Entity
 		[MaxLength(50)]
 		public byte[] OnLifeLengthByte { get; set; }
 
-		[NotMapped]
-		public Lifelength OnLifeLength => Lifelength.ConvertFromByteArray(OnLifeLengthByte);
-
 		#region Navigation Property
 
 		public Component Component { get; set; }
