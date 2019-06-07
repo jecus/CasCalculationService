@@ -616,7 +616,7 @@ namespace BusinessLayer.Calculator
 		{
 			if (baseComponent == null) return Lifelength.Null;
 			// Сначала загружаем математический аппарат
-			Init();
+			//Init();
 			
 			// Если это Frame воздушного судна, то возвращаем налет самого воздушного судна
 			if (baseComponent.BaseComponentTypeId == BaseComponentType.Frame)
@@ -730,7 +730,7 @@ namespace BusinessLayer.Calculator
 			}
 
 			// Загрузка математического аппарата
-			Init();
+			//Init();
 			// Возвращает ноль на все, что раньше даты производства
 			if (effectiveDate < baseComponent.ManufactureDate) return Lifelength.Zero;
 
@@ -804,7 +804,7 @@ namespace BusinessLayer.Calculator
 		/// <returns></returns>
 		private async Task<Lifelength> getFlightLifelengthOnStartOfDay(BaseComponentView baseComponent, DateTime date)
 		{
-			Init();
+			//Init();
 
 			// если base component - frame - возвращаем налет самого воздушного судна
 			if (baseComponent.BaseComponentTypeId == BaseComponentType.Frame)
@@ -914,6 +914,7 @@ namespace BusinessLayer.Calculator
 		}
 		#endregion
 
+		//TODO:LLp наработку считали тут я убрал надо делать в отдельном месте
 		#region private Lifelength getFlightLifelengthOnEndOfDay(Component component, DateTime effectiveDate)
 		/// <summary>
 		/// Возвращает наработку агрегата на конец дня
@@ -924,7 +925,7 @@ namespace BusinessLayer.Calculator
 		private async Task<Lifelength> getFlightLifelengthOnEndOfDay(ComponentView component, DateTime effectiveDate)
 		{
 			//загружаем математический аппарат
-			Init();
+			//Init();
 
 			// Возвращаем ноль на все, что раньше даты производства
 			if (effectiveDate < component.ManufactureDate) return Lifelength.Zero;
@@ -938,16 +939,6 @@ namespace BusinessLayer.Calculator
 			if (actualState != null && (actualState.OnLifelength.Cycles == null || actualState.OnLifelength.TotalMinutes == null))
 				res.CompleteNullParameters(await getFlightLifelengthOnEndOfDay(component, actualState.RecordDate.Value.Date.AddDays(-1)));
 			var transfers = (actualState != null) ? component.TransferRecords.GetRecords(actualState.RecordDate.Value.Date, effectiveDate) : component.TransferRecords.GetRecords(effectiveDate);
-			//объекты для расчета данных по LLP категориям
-			component.LLPData.Reset();
-			var llpChangeRecords = (component.LLPMark && component.LLPCategories) ? component.ChangeLLPCategoryRecords.GetRecords(effectiveDate) : null;
-			var llpDateFrom = (component.LLPMark && component.LLPCategories && llpChangeRecords != null && llpChangeRecords.Length > 0)
-									   ? llpChangeRecords[0].TransferDate
-									   : DateTime.MinValue;
-			var llpDateTo = (component.LLPMark && component.LLPCategories && llpChangeRecords != null && llpChangeRecords.Length > 1)
-									   ? llpChangeRecords[1].TransferDate
-									   : effectiveDate;
-			int currentLLPCheckRecordNum = 0;
 
 			#region Новый код расчета наработки по llp
 
@@ -966,148 +957,10 @@ namespace BusinessLayer.Calculator
 					// суммируем 
 					var delta = await getFlightLifelengthForPeriod(bd, dateFrom, dateTo);
 					res.Add(delta);
-
-					//расчет данных по LLP КАТЕГОРИЯМ
-					if (llpChangeRecords == null || llpChangeRecords.Length == 0) continue;
-
-					for (; ; )
-					{
-						var lastRecord = component.ChangeLLPCategoryRecords.GetLast();
-						//Поиск Категории на которую был совершен переход
-						var cat = llpChangeRecords[currentLLPCheckRecordNum].ToCategory;
-						//Поиск последнего до эффективной даты известного актуального состояния по категории, на которую был совершен переход
-						var llpCategoryActualState = cat != null
-							? component.ActualStateRecords.GetLastKnownRecord(effectiveDate, cat.CategoryType)
-							: null;
-						var data = component.LLPData.GetItemByCatagory(cat);
-
-						if (data == null)
-							break;
-
-						if (llpDateTo < dateTo)
-						{
-							if (llpCategoryActualState != null)
-							{
-								//Актуальное состояние есть
-
-								//дата актуального состояния ниже даты следующей записи о смене LLP категории
-								//(или даты на которую расчитывается наработка)
-								if (llpCategoryActualState.RecordDate.Value.Date < llpDateTo)
-								{
-									//добавляется наработка агрегата между датой актуального состояния
-									//и датой следующей записи о смене LLP категории
-									//(или даты на которую расчитывается наработка)
-									if (llpCategoryActualState.RecordDate.Value.Date < dateFrom)
-									{
-										data.LLPCurrent += getFlightLifelengthForPeriod(bd, dateFrom, llpDateTo);
-									}
-									else
-									{
-										//Дата начала отсчета наработки смещается на дату актуального состояния 
-										llpDateFrom = llpCategoryActualState.RecordDate.Value.Date;
-										//Наработка отсчитывается от наработки актуального состояния
-										data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
-										data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, llpDateTo);
-									}
-									llpDateFrom = llpDateTo;
-									currentLLPCheckRecordNum++;
-									llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
-													? llpChangeRecords[currentLLPCheckRecordNum + 1].TransferDate
-													: effectiveDate;
-								}
-								else
-								{
-									//Дата актуального состояния выше даты след. записис о смене LLP Категории
-									//Наработка отсчитывается от наработки актуального состояния
-									data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
-									llpDateFrom = llpDateTo;
-									currentLLPCheckRecordNum++;
-									llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
-													? llpChangeRecords[currentLLPCheckRecordNum + 1].TransferDate
-													: effectiveDate;
-									if (llpCategoryActualState.RecordDate.Value.Date > dateTo)
-									{
-										//Дата актуального состояния выше чем дата след. перемещения
-										break;
-									}
-								}
-							}
-							else
-							{
-								data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, llpDateTo);
-								llpDateFrom = llpDateTo;
-								currentLLPCheckRecordNum++;
-								llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
-												? llpChangeRecords[currentLLPCheckRecordNum + 1].TransferDate
-												: effectiveDate;
-							}
-						}
-						else
-						{
-							if (llpCategoryActualState != null)
-							{
-								//Актуальное состояние есть
-								if (llpCategoryActualState.RecordDate.Value.Date < dateTo)
-								{
-									if (llpCategoryActualState.RecordDate.Value.Date < dateFrom)
-									{
-										data.LLPCurrent += getFlightLifelengthForPeriod(bd, dateFrom, dateTo);
-									}
-									else
-									{
-										//Дата начала отсчета наработки смещается на дату актуального состояния 
-										llpDateFrom = llpCategoryActualState.RecordDate.Value.Date;
-										//Наработка отсчитывается от наработки актуального состояния
-										data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
-										data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, dateTo);
-									}
-									llpDateFrom = dateTo;
-									currentLLPCheckRecordNum++;
-									break;
-								}
-								if (llpCategoryActualState.RecordDate.Value.Date < llpDateTo)
-								{
-									//Дата актуального состояния между датой след перемещения компонента
-									//и датой след. записи о смене llp категории
-
-									//Дата начала отсчета наработки смещается на дату актуального состояния 
-									llpDateFrom = llpCategoryActualState.RecordDate.Value.Date;
-									break;
-								}
-								//Дата актуального состояния выше чем дата след. записи о смене llp категории
-								//Наработка отсчитывается от наработки актуального состояния
-								data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
-								llpDateFrom = dateTo;
-								break;
-							}
-							data.LLPCurrent += await getFlightLifelengthForPeriod(bd, llpDateFrom, dateTo);
-							llpDateFrom = dateTo;
-							break;
-						}
-					}
-				}
-			}
-			else
-			{
-				//расчет данных по LLP КАТЕГОРИЯМ
-				if (llpChangeRecords != null && llpChangeRecords.Length != 0)
-				{
-					for (int i = 0; i < llpChangeRecords.Length; i++)
-					{
-						// в середине цикла берем дату изменения, а в начале берем дату производства 
-						llpDateFrom = i > 0 ? llpChangeRecords[i].TransferDate : component.ManufactureDate;
-						// в конце берем дату effectiveDate, а в середине цикла дату следующего перемещения
-						llpDateTo = i < llpChangeRecords.Length - 1 ? llpChangeRecords[i + 1].TransferDate : effectiveDate;
-						// суммируем 
-						var data = component.LLPData.GetItemByCatagory(llpChangeRecords[i].ToCategory);
-						if (data != null) data.LLPLifelength.Days += GetDays(llpDateFrom, llpDateTo) + 1;
-					}
 				}
 			}
 
 			#endregion
-
-			//
 			res.Days = GetDays(component.ManufactureDate, effectiveDate);
 
 			return new Lifelength(res);

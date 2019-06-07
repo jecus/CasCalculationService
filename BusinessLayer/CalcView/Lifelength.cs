@@ -536,6 +536,16 @@ namespace BusinessLayer.Vendors
 
 		#endregion
 
+		#region public void Reset()
+		/// <summary>
+		/// приравнивает часы, циклы и дни к null
+		/// </summary>
+		public void Reset()
+		{
+			Cycles = Hours = Days = null;
+		}
+		#endregion
+
 
 		public override string ToString()
 		{
