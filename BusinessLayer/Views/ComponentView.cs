@@ -29,6 +29,7 @@ namespace BusinessLayer.Views
 		public List<TransferRecordView> TransferRecords { get; set; }
 		public List<ComponentLLPCategoryChangeRecordView> ChangeLLPCategoryRecords { get; set; }
 		public List<ComponentDirectiveView> ComponentDirectives { get; set; }
+		public List<ComponentLLPCategoryDataView> LLPData { get; set; }
 
 
 		public string Position
@@ -49,6 +50,7 @@ namespace BusinessLayer.Views
 			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
 			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
 			ComponentDirectives = source.ComponentDirectives.Select(i => new ComponentDirectiveView(i)).ToList();
+			LLPData = source.LLPData.Select(i => new ComponentLLPCategoryDataView(i)).ToList();
 			AverageUtilization = AverageUtilization.ConvertFromByteArray(source.AverageUtilization);
 		}
 

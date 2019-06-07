@@ -43,6 +43,8 @@ namespace Entity
 				.HasMany(i => i.ChangeLLPCategoryRecords).WithOne(i => i.Component).HasForeignKey(i => i.ParentId);
 			modelBuilder.Entity<Component>()
 				.HasMany(i => i.ComponentDirectives).WithOne(i => i.Component).HasForeignKey(i => i.ComponentId);
+			modelBuilder.Entity<Component>()
+				.HasMany(i => i.LLPData).WithOne(i => i.Component).HasForeignKey(i => i.ComponentId);
 			modelBuilder.Entity<BaseComponent>()
 				.HasMany(i => i.Regimes).WithOne(i => i.Component).HasForeignKey(i => i.EngineId);
 			modelBuilder.Entity<Component>()

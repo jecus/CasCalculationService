@@ -21,6 +21,7 @@ namespace BusinessLayer.Repositiries
 				.Include(i => i.ChangeLLPCategoryRecords)
 				.Include(i => i.TransferRecords)
 				.Include(i => i.Regimes)
+				.Include(i => i.LLPData)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == baseComponentId);
@@ -36,6 +37,7 @@ namespace BusinessLayer.Repositiries
 				.Include(i => i.ChangeLLPCategoryRecords)
 				.Include(i => i.TransferRecords)
 				.Include(i => i.Regimes)
+				.Include(i => i.LLPData)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == componentId);

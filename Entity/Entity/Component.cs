@@ -32,6 +32,6 @@ namespace Entity.Entity
 		public ICollection<TransferRecord> TransferRecords { get; set; }
 		public ICollection<ComponentLLPCategoryChangeRecord> ChangeLLPCategoryRecords { get; set; }
 		public ICollection<ComponentDirective> ComponentDirectives { get; set; }
-
+		public ICollection<ComponentLLPCategoryData> LLPData { get; set; }
 	}
 }

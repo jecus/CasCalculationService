@@ -10,28 +10,35 @@ namespace BusinessLayer.Calculator
 {
 	public interface ICalculator
 	{
+		/*
+         * Расчет дат
+         */
+
 		DateTime GetMaxDate(DateTime dateTime1, DateTime dateTime2);
 		DateTime GetManufactureDate(BaseView source);
 		DateTime GetStartDate(IDirective directive);
 
+		// Воздушное судно
+		Task<Lifelength> GetFlightLifelengthOnStartOfDayAsync(int aircraftId, DateTime date);
+		Task<Lifelength> GetFlightLifelengthOnEndOfDayAsync(int aircraftId, DateTime date);
+		Task<Lifelength> GetFlightLifelengthForPeriodAsync(int aircraftId, DateTime fromDate, DateTime toDate);
+		Task<Lifelength> GetFlightLifelengthIncludingThisFlightAsync(int flightId);
+		Task<Lifelength> GetCurrentFlightLifelengthAsync(int aircraftId);
 
-		Task<Lifelength> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime date);
-		Task<Lifelength> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime date);
-		Task<Lifelength> GetFlightLifelengthForPeriod(int aircraftId, DateTime fromDate, DateTime toDate);
-		Task<Lifelength> GetFlightLifelengthIncludingThisFlight(int flightId);
-		Task<Lifelength> GetCurrentFlightLifelength(int aircraftId);
+		// Базовый агрегат
+		Task<Lifelength> GetFlightLifelengthIncludingThisFlightBaseComponentAsync(int baseComponentId, int flightId);
+		Task<Lifelength> GetFlightLifelengthOnStartOfDayBaseComponentAsync(int baseComponentId, DateTime date);
+		Task<Lifelength> GetFlightLifelengthOnStartOfDayBaseComponentAsync(int baseComponentId, DateTime date, int flightRegimeId);
+		Task<Lifelength> GetCurrentFlightLifelengthBaseComponentAsync(int baseComponentId);
+		Task<Lifelength> GetFlightLifelengthOnEndOfDayBaseComponentAsync(int baseComponentId, DateTime effectiveDate);
+		Task<Lifelength> GetFlightLifelengthForPeriodBaseComponentAsync(int baseComponentId, DateTime fromDate, DateTime toDate);
+		Task<Lifelength> GetFlightLifelengthForPeriodBaseComponentAsync(int baseComponentId, DateTime fromDate, DateTime toDate,
+			int flightRegimeId);
+		Task<Lifelength> GetFlightLifelengthBaseComponentAsync(int flightId, int baseComponentId);
+		Task<Lifelength> GetFlightLifelengthBaseComponentAsync(int flightId, int baseComponentId, int flightRegimeId);
 
-		/*
-	    * Базовый агрегат
-	    */
-		Task<Lifelength> GetFlightLifelengthIncludingThisFlight(BaseComponentView baseComponent, AircraftFlightView flight);
-		Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseComponentView baseComponent, DateTime date);
-		Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseComponentView baseComponent, DateTime date, FlightRegime flightRegime);
-		Task<Lifelength> GetCurrentFlightLifelength(BaseComponentView baseComponent);
-		Task<Lifelength> GetFlightLifelengthOnEndOfDay(BaseComponentView baseComponent, DateTime effectiveDate);
-		Task<Lifelength> GetFlightLifelengthForPeriod(BaseComponentView baseComponent, DateTime fromDate, DateTime toDate);
-		Task<Lifelength> GetFlightLifelengthForPeriod(BaseComponentView baseComponent, DateTime fromDate, DateTime toDate, FlightRegime flightRegime);
-		Task<Lifelength> GetFlightLifelength(AircraftFlightView flight, BaseComponentView bd);
-		Task<Lifelength> GetFlightLifelength(AircraftFlightView flight, BaseComponentView bd, FlightRegime flightRegime);
+		// Агрегат
+		Task<Lifelength> GetCurrentFlightLifelength(int componentId);
+		Task<Lifelength> GetFlightLifelengthOnEndOfDay(int componentId, DateTime effectiveDate);
 	}
 }
