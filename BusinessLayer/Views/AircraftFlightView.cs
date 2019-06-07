@@ -64,6 +64,51 @@ namespace BusinessLayer.Views
 
 		#endregion
 
+		#region public TimeSpan FlightTime
+		/// <summary>
+		/// Время полета ВС по Takeoff-LDG
+		/// </summary>
+		public TimeSpan FlightTime
+		{
+			get
+			{
+				int flightTime = LDGTime - TakeOffTime;
+				if (flightTime < 0) flightTime += 24 * 60;
+
+				TimeSpan time = new TimeSpan(flightTime / 60, flightTime - (flightTime / 60) * 60, 0);
+
+				return time;
+			}
+		}
+		#endregion
+
+		#region public Int32 BlockTimeTotalMinutes { get; }
+		/// <summary>
+		/// Возвращает время полета ВС по BlockTime(Out-In)
+		/// </summary>
+
+		public Int32 BlockTimeTotalMinutes
+		{
+			get
+			{
+				int blockTime = (int) (InTime - OutTime);
+				if (blockTime < 0) blockTime += 24 * 60;
+				return blockTime;
+			}
+		}
+
+		#endregion
+
+		#region public Lifelength BlockTimeLifelenght { get; }
+		/// <summary> 
+		/// Возвращает наработку на основе BlockTime(In - Out) за заданный полет
+		/// </summary>
+		public Lifelength BlockTimeLifelenght
+		{
+			get { return new Lifelength(null, Cycles, BlockTimeTotalMinutes); }
+		}
+		#endregion
+
 		public AircraftFlightView(AircraftFlight source)
 		{
 			Id = source.Id;

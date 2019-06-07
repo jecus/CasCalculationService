@@ -864,6 +864,350 @@ namespace BusinessLayer.Calculator
 		}
 		#endregion
 
+
+		// Агрегат
+
+		#region public async Task<Lifelength> GetCurrentFlightLifelength(ComponentView component)
+		/// <summary> 
+		/// Возвращает текущую наработку агрегата
+		/// </summary>
+		/// <param name="component"></param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetCurrentFlightLifelength(ComponentView component)
+		{
+			if (component is BaseComponentView)
+				return await getFlightLifelengthOnEndOfDay((BaseComponentView)component, DateTime.Today);
+
+			return await getFlightLifelengthOnEndOfDay(component, DateTime.Today);
+		}
+		#endregion
+
+		#region public async Task<Lifelength> GetFlightLifelengthOnEndOfDay(ComponentView component, DateTime effectiveDate)
+		/// <summary>
+		/// Возвращает наработку агрегата на конец дня
+		/// </summary>
+		/// <param name="component"></param>
+		/// <param name="effectiveDate"></param>
+		/// <returns></returns>
+		public async Task<Lifelength> GetFlightLifelengthOnEndOfDay(ComponentView component, DateTime effectiveDate)
+		{
+			return await getFlightLifelengthOnEndOfDay(component, effectiveDate);
+		}
+		#endregion
+
+		#region private Lifelength getFlightLifelengthOnEndOfDay(Component component, DateTime effectiveDate)
+		/// <summary>
+		/// Возвращает наработку агрегата на конец дня
+		/// </summary>
+		/// <param name="component"></param>
+		/// <param name="effectiveDate"></param>
+		/// <returns></returns>
+		private async Task<Lifelength> getFlightLifelengthOnEndOfDay(ComponentView component, DateTime effectiveDate)
+		{
+			//загружаем математический аппарат
+			Init();
+
+			// Возвращаем ноль на все, что раньше даты производства
+			if (effectiveDate < component.ManufactureDate) return Lifelength.Zero;
+
+			// Наработка обычного агрегата на заданную дату считается 
+			// от момента последнего актуального состояния и дальше суммируя наработки базовых агрегатов, на которых был установлен агрегат.
+
+			var actualState = component.ActualStateRecords.GetLastKnownRecord(effectiveDate);
+			var res = (actualState != null) ? new Lifelength(actualState.OnLifelength) : Lifelength.Zero;
+			// Если мы не имеем один из параметров актуального состояния - берем его из наработки на предыдущий день
+			if (actualState != null && (actualState.OnLifelength.Cycles == null || actualState.OnLifelength.TotalMinutes == null))
+				res.CompleteNullParameters(getFlightLifelengthOnEndOfDay(component, actualState.RecordDate.Date.AddDays(-1)));
+			var transfers = (actualState != null) ? component.TransferRecords.GetRecords(actualState.RecordDate.Date, effectiveDate) : component.TransferRecords.GetRecords(effectiveDate);
+			//объекты для расчета данных по LLP категориям
+			component.LLPData.Reset();
+			var llpChangeRecords = (component.LLPMark && component.LLPCategories) ? component.ChangeLLPCategoryRecords.GetRecords(effectiveDate) : null;
+			var llpDateFrom = (component.LLPMark && component.LLPCategories && llpChangeRecords != null && llpChangeRecords.Length > 0)
+									   ? llpChangeRecords[0].RecordDate
+									   : DateTime.MinValue;
+			var llpDateTo = (component.LLPMark && component.LLPCategories && llpChangeRecords != null && llpChangeRecords.Length > 1)
+									   ? llpChangeRecords[1].RecordDate
+									   : effectiveDate;
+			int currentLLPCheckRecordNum = 0;
+
+			#region Новый код расчета наработки по llp
+
+			if (transfers != null)
+			{
+				for (int i = 0; i < transfers.Length; i++)
+				{
+					//BaseDetail bd = BaseDetails.GetBaseDetailByRepresentingDetailId(transfers[i].DestinationObjectID);
+					var bd = _componentRepository.GetBaseComponentByIdAsync(transfers[i].DestinationObjectId);
+					if (bd == null) continue; // такое возможно если базовый агрегат был удален...
+
+					// в середине цикла берем дату перемещения, а в начале берем дату актуального состояния 
+					var dateFrom = i > 0 || actualState == null ? transfers[i].TransferDate : actualState.RecordDate.Date;
+					// в конце берем дату dateTo, а в середине цикла дату следующего перемещения
+					var dateTo = i < transfers.Length - 1 ? transfers[i + 1].TransferDate : effectiveDate;
+					// суммируем 
+					var delta = await getFlightLifelengthForPeriod(bd, dateFrom, dateTo);
+					res.Add(delta);
+
+					//расчет данных по LLP КАТЕГОРИЯМ
+					if (llpChangeRecords == null || llpChangeRecords.Length == 0) continue;
+
+					for (; ; )
+					{
+						var lastRecord = component.ChangeLLPCategoryRecords.GetLast();
+						//Поиск Категории на которую был совершен переход
+						var cat = llpChangeRecords[currentLLPCheckRecordNum].ToCategory;
+						//Поиск последнего до эффективной даты известного актуального состояния по категории, на которую был совершен переход
+						var llpCategoryActualState = cat != null
+							? component.ActualStateRecords.GetLastKnownRecord(effectiveDate, cat.CategoryType)
+							: null;
+						var data = component.LLPData.GetItemByCatagory(cat);
+
+						if (data == null)
+							break;
+
+						if (llpDateTo < dateTo)
+						{
+							if (llpCategoryActualState != null)
+							{
+								//Актуальное состояние есть
+
+								//дата актуального состояния ниже даты следующей записи о смене LLP категории
+								//(или даты на которую расчитывается наработка)
+								if (llpCategoryActualState.RecordDate.Date < llpDateTo)
+								{
+									//добавляется наработка агрегата между датой актуального состояния
+									//и датой следующей записи о смене LLP категории
+									//(или даты на которую расчитывается наработка)
+									if (llpCategoryActualState.RecordDate.Date < dateFrom)
+									{
+										data.LLPCurrent += getFlightLifelengthForPeriod(bd, dateFrom, llpDateTo);
+									}
+									else
+									{
+										//Дата начала отсчета наработки смещается на дату актуального состояния 
+										llpDateFrom = llpCategoryActualState.RecordDate.Date;
+										//Наработка отсчитывается от наработки актуального состояния
+										data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
+										data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, llpDateTo);
+									}
+									llpDateFrom = llpDateTo;
+									currentLLPCheckRecordNum++;
+									llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
+													? llpChangeRecords[currentLLPCheckRecordNum + 1].RecordDate
+													: effectiveDate;
+								}
+								else
+								{
+									//Дата актуального состояния выше даты след. записис о смене LLP Категории
+									//Наработка отсчитывается от наработки актуального состояния
+									data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
+									llpDateFrom = llpDateTo;
+									currentLLPCheckRecordNum++;
+									llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
+													? llpChangeRecords[currentLLPCheckRecordNum + 1].RecordDate
+													: effectiveDate;
+									if (llpCategoryActualState.RecordDate.Date > dateTo)
+									{
+										//Дата актуального состояния выше чем дата след. перемещения
+										break;
+									}
+								}
+							}
+							else
+							{
+								data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, llpDateTo);
+								llpDateFrom = llpDateTo;
+								currentLLPCheckRecordNum++;
+								llpDateTo = llpChangeRecords.Length > currentLLPCheckRecordNum + 1
+												? llpChangeRecords[currentLLPCheckRecordNum + 1].RecordDate
+												: effectiveDate;
+							}
+						}
+						else
+						{
+							if (llpCategoryActualState != null)
+							{
+								//Актуальное состояние есть
+								if (llpCategoryActualState.RecordDate.Date < dateTo)
+								{
+									if (llpCategoryActualState.RecordDate.Date < dateFrom)
+									{
+										data.LLPCurrent += getFlightLifelengthForPeriod(bd, dateFrom, dateTo);
+									}
+									else
+									{
+										//Дата начала отсчета наработки смещается на дату актуального состояния 
+										llpDateFrom = llpCategoryActualState.RecordDate.Date;
+										//Наработка отсчитывается от наработки актуального состояния
+										data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
+										data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, dateTo);
+									}
+									llpDateFrom = dateTo;
+									currentLLPCheckRecordNum++;
+									break;
+								}
+								if (llpCategoryActualState.RecordDate.Date < llpDateTo)
+								{
+									//Дата актуального состояния между датой след перемещения компонента
+									//и датой след. записи о смене llp категории
+
+									//Дата начала отсчета наработки смещается на дату актуального состояния 
+									llpDateFrom = llpCategoryActualState.RecordDate.Date;
+									break;
+								}
+								//Дата актуального состояния выше чем дата след. записи о смене llp категории
+								//Наработка отсчитывается от наработки актуального состояния
+								data.LLPCurrent = new Lifelength(llpCategoryActualState.OnLifelength);
+								llpDateFrom = dateTo;
+								break;
+							}
+							data.LLPCurrent += getFlightLifelengthForPeriod(bd, llpDateFrom, dateTo);
+							llpDateFrom = dateTo;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				//расчет данных по LLP КАТЕГОРИЯМ
+				if (llpChangeRecords != null && llpChangeRecords.Length != 0)
+				{
+					for (int i = 0; i < llpChangeRecords.Length; i++)
+					{
+						// в середине цикла берем дату изменения, а в начале берем дату производства 
+						llpDateFrom = i > 0 ? llpChangeRecords[i].RecordDate : component.ManufactureDate;
+						// в конце берем дату effectiveDate, а в середине цикла дату следующего перемещения
+						llpDateTo = i < llpChangeRecords.Length - 1 ? llpChangeRecords[i + 1].RecordDate : effectiveDate;
+						// суммируем 
+						var data = component.LLPData.GetItemByCatagory(llpChangeRecords[i].ToCategory);
+						if (data != null) data.LLPLifelength.Days += GetDays(llpDateFrom, llpDateTo) + 1;
+					}
+				}
+			}
+
+			#endregion
+
+			//
+			res.Days = GetDays(component.ManufactureDate, effectiveDate);
+
+			//TODO:LLP расчитывается в ComponentComplianceLifeLimitControl(начиная с 498 строки)
+			//component.ParentAircraftId - если Агрегат открыт не со склада
+			if (component.AircaraftId > 0 && component.LLPMark && component.LLPCategories)
+			{
+				var aircraft = _aircraftRepository.GetAircraftByIdAsync(component.AircaraftId);
+				var lifeLimitCategories = _environment.GetDictionary<LLPLifeLimitCategory>()
+					.OfType<LLPLifeLimitCategory>()
+					.Where(llp => llp.AircraftModel?.ItemId == aircraft.Model?.ItemId).OrderBy(i => i.GetChar())
+					.ToList();
+
+
+				if (component.ChangeLLPCategoryRecords.Count == 0)
+				{
+					if (component.ParentBaseComponent != null)
+					{
+						var lastBaseComponentLL = component.ParentBaseComponent.ChangeLLPCategoryRecords.GetLast();
+						if (lastBaseComponentLL != null)
+						{
+							component.ChangeLLPCategoryRecords.Add(new ComponentLLPCategoryChangeRecord
+							{
+								ParentId = component.Id,
+								ToCategory = lastBaseComponentLL.ToCategory ?? LLPLifeLimitCategory.Unknown,
+								RecordDate = lastBaseComponentLL.RecordDate,
+								OnLifelength = Lifelength.Zero
+							});
+							_environment.NewKeeper.Save(component.ChangeLLPCategoryRecords[0]);
+						}
+					}
+				}
+
+				foreach (var t in lifeLimitCategories)
+				{
+					var llpData = component.LLPData.GetItemByCatagory(t);
+					if (llpData == null)
+					{
+						llpData = new ComponentLLPCategoryData
+						{
+							LLPLifeLimit = component.LifeLimit,
+							ParentCategory = t,
+							ComponentId = component.ItemId
+						};
+						component.LLPData.Add(llpData);
+						_environment.NewKeeper.Save(llpData);
+					}
+
+					var lastRecord = await component.ChangeLLPCategoryRecords.GetLast();
+					var selectedCategory = lastRecord?.ToCategory;
+
+					if (selectedCategory != null)
+					{
+						if (component.StartDate < llpData.FromDate && llpData.LLPLifeLengthForDate.Cycles.HasValue && llpData.LLPLifeLengthForDate.Cycles != 0 && llpData.LLPCurrent != null)
+							llpData.LLPCurrent += llpData.LLPLifeLengthForDate;
+
+
+						if (llpData.LLPCurrent != null)
+						{
+							if (!llpData.LLPCurrent.IsEqual(llpData.LLPTemp))
+							{
+								llpData.LLPTemp = new Lifelength(llpData.LLPCurrent);
+								//TODO: нет LLPTemp на WCF сервисе(ComponentLLPCategoryDataDTO) РАЗОБРАТЬСЯ!!!!!!!!!!!!!!!!!!!!!!!!!!
+								//_environment.NewKeeper.Save(llpData, writeAudit: false);
+							}
+						}
+
+						if (selectedCategory.ItemId == t.ItemId)
+						{
+							if (!lastRecord.OnLifelength.IsEqual(llpData.LLPLifeLengthForDate))
+							{
+								lastRecord.OnLifelength = new Lifelength(llpData.LLPLifeLengthForDate);
+								_environment.NewKeeper.Save(lastRecord);
+							}
+						}
+					}
+
+				}
+
+				foreach (var data in component.LLPData)
+				{
+					double hours = 1, cycles = 1, days = 1;
+					foreach (var categoryData in component.LLPData)
+					{
+						var llp = categoryData.LLPCurrent ?? categoryData.LLPTemp;
+
+						if (categoryData.LLPLifeLimit?.Hours != null && llp?.Hours != null &&
+							categoryData.LLPLifeLimit?.Hours != 0)
+						{
+							hours -= (double)llp?.Hours / (double)categoryData.LLPLifeLimit.Hours;
+						}
+						if (categoryData.LLPLifeLimit?.Cycles != null && llp?.Cycles != null &&
+							categoryData.LLPLifeLimit?.Cycles != 0)
+						{
+							cycles -= (double)llp?.Cycles / (double)categoryData.LLPLifeLimit.Cycles;
+						}
+						if (categoryData.LLPLifeLimit?.Days != null && llp?.Days != null &&
+							categoryData.LLPLifeLimit?.Days != 0)
+						{
+							days -= (double)llp?.Days / (double)categoryData.LLPLifeLimit.Days;
+						}
+					}
+					data.Remain = Lifelength.Null;
+					if (data.LLPLifeLimit?.Hours != null)
+						data.Remain.Hours = (int)(hours * (double)data.LLPLifeLimit.Hours);
+					if (data.LLPLifeLimit?.Cycles != null)
+						data.Remain.Cycles = (int)(cycles * (double)data.LLPLifeLimit.Cycles);
+					if (data.LLPLifeLimit?.Days != null)
+						data.Remain.Days = (int)(days * (double)data.LLPLifeLimit.Days);
+
+					if (data.LLPLifeLimit != null)
+						data.Remain.Resemble(data.LLPLifeLimit);
+				}
+
+			}
+
+			return new Lifelength(res);
+		}
+		#endregion
+
 		//AircraftFlights
 
 		#region private Lifelength getFlightLifelengthByPeriod(AircraftFlightCollection flights, BaseComponent bd, DateTime dateFrom, DateTime dateTo)
@@ -903,60 +1247,185 @@ namespace BusinessLayer.Calculator
 		}
 		#endregion
 
-		#region private Lifelength getFlightLifelength(AircraftFlight flight, BaseComponent bd)
-		/// <summary>
-		/// возвращает наработку Базового агрегата за данный полет
-		/// Применимо для любых типов Базовых агрегатов 
-		/// </summary>
-		/// <param name="bd"></param>
-		/// <returns></returns>
-		private async Task<Lifelength> getFlightLifelength(AircraftFlightView flight, BaseComponent bd)
+		//#region private Lifelength getFlightLifelength(AircraftFlight flight, BaseComponent bd)
+		///// <summary>
+		///// возвращает наработку Базового агрегата за данный полет
+		///// Применимо для любых типов Базовых агрегатов 
+		///// </summary>
+		///// <param name="bd"></param>
+		///// <returns></returns>
+		//private async Task<Lifelength> getFlightLifelength(AircraftFlightView flight, BaseComponentView bd)
+		//{
+		//	if (bd == null)
+		//		return Lifelength.Zero;
+
+		//	if ((bd.BaseComponentTypeId == BaseComponentType.Frame || bd.BaseComponentTypeId == BaseComponentType.LandingGear))
+		//	{
+		//		if (flight.AtlbRecordType == AtlbRecordType.Flight /*&& flight.CancelReason == null*/)
+		//			return flight.FlightTimeLifelength;
+
+		//		return Lifelength.Zero;
+		//	}
+
+		//	if (bd.BaseComponentTypeId != BaseComponentType.Engine &&
+		//		bd.BaseComponentTypeId != BaseComponentType.APU &&
+		//		bd.BaseComponentTypeId != BaseComponentType.Propeller &&
+		//		flight.RunupsCollection.Count == 0)
+		//		return Lifelength.Zero;
+
+		//	var res = Lifelength.Zero;
+		//	List<RunUpView> runs = null;
+
+		//	if (bd.BaseComponentTypeId == BaseComponentType.Engine || bd.BaseComponentTypeId == BaseComponentType.APU)
+		//		runs = flight.RunupsCollection/*GetByBaseComponent(bd)*/.ToList();
+		//	else if (bd.BaseComponentTypeId == BaseComponentType.Propeller)
+		//		runs = flight.RunupsCollection.Where(r => r.BaseComponent.BaseComponentTypeId == BaseComponentType.Engine &&
+		//											r.BaseComponent.Position.Trim() == bd.Position.Trim()).ToList();
+
+		//	if (runs != null)
+		//	{
+		//		if (runs.Count == 0 && bd.BaseComponentTypeId != BaseComponentType.APU)
+		//			return flight.FlightTimeLifelength;
+		//		if (runs.Count == 0 && bd.BaseComponentTypeId == BaseComponentType.APU)
+		//		{
+		//			var parentAircraft = await _aircraftRepository.GetAircraftByIdAsync(bd.AircaraftId);
+		//			if (parentAircraft.ApuUtizationPerFlightinMinutes != null)
+		//				return new Lifelength(null, 1, parentAircraft.ApuUtizationPerFlightinMinutes);
+		//		}
+
+		//		foreach (var t in runs)
+		//			res.Add(t.Lifelength);
+
+		//	}
+		//	return res;
+		//}
+		//#endregion
+
+		#region private Lifelength getBlockLifelengthForPeriod(AircraftFlightCollection flights, BaseComponent bd, DateTime dateFrom, DateTime dateTo)
+
+		private Lifelength getBlockLifelengthForPeriod(List<AircraftFlightView> flights, BaseComponentView bd, DateTime dateFrom, DateTime dateTo)
 		{
-			if (bd == null)
-				return Lifelength.Zero;
-
-			if ((bd.BaseComponentTypeId == BaseComponentType.Frame || bd.BaseComponentTypeId == BaseComponentType.LandingGear))
-			{
-				if (flight.AtlbRecordType == AtlbRecordType.Flight /*&& flight.CancelReason == null*/)
-					return flight.FlightTimeLifelength;
-
-				return Lifelength.Zero;
-			}
-
-			if (bd.BaseComponentTypeId != BaseComponentType.Engine &&
-				bd.BaseComponentTypeId != BaseComponentType.APU &&
-				bd.BaseComponentTypeId != BaseComponentType.Propeller &&
-				flight.RunupsCollection.Count == 0)
-				return Lifelength.Zero;
-
 			var res = Lifelength.Zero;
-			List<RunUpView> runs = null;
+			if (bd == null) return res;
 
-			if (bd.BaseComponentTypeId == BaseComponentType.Engine || bd.BaseComponentTypeId == BaseComponentType.APU)
-				runs = flight.RunupsCollection/*GetByBaseComponent(bd)*/.ToList();
-			else if (bd.BaseComponentTypeId == BaseComponentType.Propeller)
-				runs = flight.RunupsCollection.Where(r => r.BaseComponent.BaseComponentTypeId == BaseComponentType.Engine &&
-													r.BaseComponent.Position.Trim() == bd.Position.Trim()).ToList();
-
-			if (runs != null)
+			foreach (var flight in flights)
 			{
-				if (runs.Count == 0 && bd.BaseComponentTypeId != BaseComponentType.APU)
-					return flight.FlightTimeLifelength;
-				if (runs.Count == 0 && bd.BaseComponentTypeId == BaseComponentType.APU)
+				if (flight.FlightDate.Date >= dateFrom && flight.FlightDate.Date <= dateTo)
 				{
-					var parentAircraft = await _aircraftRepository.GetAircraftByIdAsync(bd.AircaraftId);
-					if (parentAircraft.ApuUtizationPerFlightinMinutes != null)
-						return new Lifelength(null, 1, parentAircraft.ApuUtizationPerFlightinMinutes);
+					//При расчете Блокнаработки для планера и шасси (Frame и LandingGear) учитываются только те записи в бортжурнале,
+					//что были внесены для рейсов(НЕ ЯВЛЯЮТСЯ записями о произведении технического обслуживания),
+					//и рейсы были НЕ ОТМЕНЕНЫ(CancelReason == null).
+
+					//Если запись не является рейсом или рейс был отменен,
+					//то его нельзя использовать для расчета Блокнаработки(времененного промежутка между In - Out) планера и шасси (Frame и LandingGear).
+
+					//Так же Блокнаработка расчитывается для всех Базовых Агрегатов если рейс состоялся.
+
+					//Так же Блокнаработка расчитывается для Engine, APU, Propeller вне зависимости от типа записи бортжурнала,
+					//и вне зависимости от того состоялся рейс или нет.
+					if (!ItWasRealFlight(flight) &&
+					    (bd.BaseComponentTypeId == BaseComponentType.Frame || bd.BaseComponentTypeId == BaseComponentType.LandingGear))
+					{
+						continue;
+					}
+					res.Add(flight.BlockTimeLifelenght);
 				}
+			}
+			return res;
+		}
 
-				foreach (var t in runs)
-					res.Add(t.Lifelength);
+		#endregion
 
+		#region private Lifelength getFlightLifelengthForPeriod(AircraftFlightCollection flights, BaseComponent bd, DateTime dateFrom, DateTime dateTo, FlightRegime flightRegime)
+
+		/// <summary>
+		/// возвращает наработку детали за указанный период в указанном режиме, если есть соответствующие данные в полетах.
+		/// <br/>
+		/// Для Engine, Propellers и APU наработка расчитывается по Runup-ам
+		/// </summary>
+		/// <param name="flights">Коллекция полетов</param>
+		/// <param name="bd">Базовый агрегат</param>
+		/// <param name="dateFrom">Начало интервала</param>
+		/// <param name="dateTo">Конец интервала</param>
+		/// <param name="flightRegime">режим работы</param>
+		/// <returns>наработка в заданном режиме или Lifelength.Zero</returns>
+		/// <exception cref="ArgumentNullException">если базовая деталь равна null</exception>
+		/// <exception cref="ArgumentNullException">если FlightRegime равен null</exception>
+		/// <exception cref="ArgumentException">если FlightRegime равен Unknown</exception>
+		private async Task<Lifelength> getFlightLifelengthForPeriod(List<AircraftFlightView> flights, BaseComponentView bd, DateTime dateFrom, DateTime dateTo, FlightRegime flightRegime)
+		{
+			var res = Lifelength.Zero;
+			if (bd == null)
+				throw new ArgumentNullException(nameof(bd), "Can not be null");
+
+			if (flightRegime == null)
+				throw new ArgumentNullException(nameof(flightRegime), "Can not be null");
+			if (flightRegime == FlightRegime.UNK)
+				throw new ArgumentException("FlightRegime should not be Unknown", nameof(flightRegime));
+
+			foreach (var flight in flights)
+			{
+				if (flight.FlightDate.Date >= dateFrom && flight.FlightDate.Date <= dateTo)
+				{
+					//полет попадает и интервал
+					if ((bd.BaseComponentTypeId == BaseComponentType.Engine || bd.BaseComponentTypeId == BaseComponentType.APU)
+						&& flight.PowerUnitTimeInRegimeCollection.Count > 0)
+					{
+						//Если деталь является силовым агрегатом 
+						//и в полете есть данные о работе силовых агрегатов в разл. режимах
+
+						//1. Отыскать работу именно для этого силового агрегата в заданном режиме
+						List<EngineTimeInRegime> pwts = 
+							flight.PowerUnitTimeInRegimeCollection.Where(r => r.BaseComponentId == bd.Id &&
+																		 r.FlightRegime == flightRegime).ToList();
+						//2. Суммировать наработку по пускам (если таковые есть)
+						foreach (EngineTimeInRegime pwt in pwts)
+							res.Add(LifelengthSubResource.Minutes, (int)pwt.TimeInRegime.TotalMinutes);
+					}
+					else if (bd.BaseComponentTypeId == BaseComponentType.Propeller && flight.RunupsCollection.Count > 0)
+					{
+						List<EngineTimeInRegime> pwts =
+							flight.PowerUnitTimeInRegimeCollection.Where(r => r.BaseComponent.BaseComponentTypeId == BaseComponentType.Engine &&
+																	r.FlightRegime == flightRegime &&
+																	r.BaseComponent.Position.Trim() == bd.Position.Trim()).ToList();
+						//2. Суммировать наработку по пускам (если таковые есть)
+						foreach (EngineTimeInRegime pwt in pwts)
+							res.Add(LifelengthSubResource.Minutes, (int)pwt.TimeInRegime.TotalMinutes);
+					}
+				}
 			}
 			return res;
 		}
 		#endregion
 
+		#region internal bool ItWasRealFlight(AircraftFlight flight)
+
+		internal bool ItWasRealFlight(AircraftFlightView flight)
+		{
+			return flight.AtlbRecordType == AtlbRecordType.Flight && flight.CancelReason == null;
+		}
+
+		#endregion
+
+		#region public double GetTotalHours(AircraftFlightCollection flights)
+
+		public double GetTotalHours(List<AircraftFlightView> flights)
+		{
+			return flights.Where(ItWasRealFlight)
+				.Sum(aircraftFlight => aircraftFlight.FlightTime.TotalHours);
+		}
+
+		#endregion
+
+		#region public int GetTotalCycles(AircraftFlightCollection flights)
+
+		public int GetTotalCycles(List<AircraftFlightView> flights)
+		{
+			return (int)flights.Where(ItWasRealFlight)
+				.Sum(aircraftFlight => aircraftFlight.FlightTimeLifelength.Cycles);
+		}
+
+		#endregion
 
 		/*
          * Дополнительно
