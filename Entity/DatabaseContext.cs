@@ -9,6 +9,7 @@ namespace Entity
 	public class DatabaseContext : DbContext
 	{
 		public DbSet<AircraftFlight> AircraftFlights { get; set; }
+		public DbSet<Document> Documents { get; set; }
 		public DbSet<DirectiveRecord> DirectiveRecords { get; set; }
 		public DbSet<EngineTimeInRegime> EngineTimeInRegimes { get; set; }
 		public DbSet<MaintenanceDirective> MaintenanceDirectives { get; set; }
