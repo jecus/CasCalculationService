@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator.Dictionaries;
@@ -15,12 +16,38 @@ namespace BusinessLayer.Calculator
 		private readonly ICalculator _calculator;
 		private readonly IMTOPCalculator _mtopCalculator;
 		private readonly IAverageUtilizationRepository _averageUtilizationRepository;
+		private readonly IComponentRepository _componentRepository;
 
-		public PerformanceCalculator(ICalculator calculator, IMTOPCalculator mtopCalculator, IAverageUtilizationRepository averageUtilizationRepository)
+		public PerformanceCalculator(ICalculator calculator, 
+			IMTOPCalculator mtopCalculator,
+			IAverageUtilizationRepository averageUtilizationRepository,
+			IComponentRepository componentRepository)
 		{
 			_calculator = calculator;
 			_mtopCalculator = mtopCalculator;
 			_averageUtilizationRepository = averageUtilizationRepository;
+			_componentRepository = componentRepository;
+		}
+
+		public async Task<List<NextPerformance>> NextPerformanceForComponent(int componentId)
+		{
+			var comp = await _componentRepository.GetComponentByIdAsync(componentId);
+			await GetNextPerformance(comp);
+			return comp.NextPerformances;
+		}
+
+		public async Task<Dictionary<int,List<NextPerformance>>> NextPerformanceForComponents(List<int> componentIds)
+		{
+			var res = new Dictionary<int, List<NextPerformance>>();
+			var componentViews = await _componentRepository.GetComponentsAsync(componentIds);
+
+			foreach (var componentView in componentViews)
+			{
+				await GetNextPerformance(componentView);
+				res.Add(componentView.Id, componentView.NextPerformances);
+			}
+
+			return res;
 		}
 
 		#region public void GetNextPerformance(IDirective directive, ForecastData forecast = null)
@@ -41,9 +68,11 @@ namespace BusinessLayer.Calculator
 				return;
 
 			IThreshold threshold;
-			if (directive is MaintenanceDirectiveView && ((MaintenanceDirectiveView)directive).MaintenanceCheck != null)
-				threshold = ((MaintenanceDirectiveView)directive).MaintenanceCheck.Threshold;
-			else threshold = directive.Threshold;
+			//if (directive is MaintenanceDirectiveView && ((MaintenanceDirectiveView)directive).MaintenanceCheck != null)
+			//	threshold = ((MaintenanceDirectiveView)directive).MaintenanceCheck.Threshold;
+			//else threshold = directive.Threshold;
+
+			threshold = directive.Threshold;
 
 			var last = Lifelength.Null;
 			var current = await _calculator.GetFlightLifelengthOnEndOfDay(directive.LifeLengthParent, DateTime.Today);
@@ -213,7 +242,8 @@ namespace BusinessLayer.Calculator
 
 				if (directive is ComponentView && ((ComponentView)directive).LLPMark && ((ComponentView)directive).LLPCategories)
 				{
-					np.Remains = ((ComponentView)directive).LLPRemains;
+					//TODO:хз зачем llp тут
+					//np.Remains = ((ComponentView)directive).LLPRemains;
 				}
 				else
 				{

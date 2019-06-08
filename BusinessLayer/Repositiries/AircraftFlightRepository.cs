@@ -29,10 +29,14 @@ namespace BusinessLayer.Repositiries
 
 			var res = await _db.AircraftFlights
 				.Include(i => i.RunupsCollection)
+				.Include(i => i.CancelReason)
 				.AsNoTracking()
 				.OnlyActive()
 				.Where(i => ids.Contains(i.ATLBID))
 				.ToListAsync();
+
+			if (res == null)
+				return null;
 
 			return res.Select(i => new AircraftFlightView(i)).ToList();
 		}
@@ -41,9 +45,13 @@ namespace BusinessLayer.Repositiries
 		{
 			var res = await _db.AircraftFlights
 				.Include(i => i.RunupsCollection)
+				.Include(i => i.CancelReason)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == flightId);
+
+			if (res == null)
+				return null;
 
 			return new AircraftFlightView(res);
 		}
@@ -52,10 +60,14 @@ namespace BusinessLayer.Repositiries
 		{
 			var res = await _db.AircraftFlights
 				.Include(i => i.RunupsCollection)
+				.Include(i => i.CancelReason)
 				.AsNoTracking()
 				.OnlyActive()
 				.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate)
 				.ToListAsync();
+
+			if (res == null)
+				return null;
 
 			return res.Select(i => new AircraftFlightView(i)).ToList();
 		}

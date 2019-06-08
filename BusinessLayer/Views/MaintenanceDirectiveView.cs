@@ -12,7 +12,7 @@ namespace BusinessLayer.Views
 	public class MaintenanceDirectiveView : BaseView, IDirective
 	{
 		#region IDirective
-		public BaseView LifeLengthParent => ParentBaseComponent;
+		public BaseView LifeLengthParent => null;
 
 		private List<NextPerformance> _nextPerformances;
 		public List<NextPerformance> NextPerformances => _nextPerformances ?? (_nextPerformances = new List<NextPerformance>());

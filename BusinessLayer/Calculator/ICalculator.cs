@@ -10,6 +10,10 @@ namespace BusinessLayer.Calculator
 {
 	public interface ICalculator
 	{
+
+		Task<Lifelength> GetFlightLifelengthOnEndOfDay(BaseView directive, DateTime effectiveDate);
+		Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseView directive, DateTime effectiveDate);
+
 		/*
          * Расчет дат
          */

@@ -29,6 +29,8 @@ namespace BusinessLayer.Views
 
 		#endregion
 
+		public ComponentView ParentComponent { get; set; }
+
 		public int? ComponentId { get; set; }
 
 		public List<DirectiveRecordView> PerformanceRecords { get; set; }
@@ -42,6 +44,7 @@ namespace BusinessLayer.Views
 			IsClosed = source.IsClosed;
 			Threshold = CalcView.Threshold.ConvertForComponentDirective(source.Threshold);
 			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords.Select(i => new DirectiveRecordView(i)));
+			ParentComponent =new ComponentView(source.Component); 
 		}
 	}
 }

@@ -28,10 +28,23 @@ namespace Entity.Entity
 		[Column("AverageUtilization")]
 		public byte[] AverageUtilization { get; set; }
 
+		[Column("Warranty")]
+		public byte[] Warranty { get; set; }
+
+		[Column("WarrantyNotify")]
+		public byte[] WarrantyNotify { get; set; }
+
+		[Column("LifeLimit")]
+		public byte[] LifeLimit { get; set; }
+
+		[Column("LifeLimitNotify")]
+		public byte[] LifeLimitNotify { get; set; }
+
 		public ICollection<ActualStateRecord> ActualStateRecords { get; set; }
 		public ICollection<TransferRecord> TransferRecords { get; set; }
 		public ICollection<ComponentLLPCategoryChangeRecord> ChangeLLPCategoryRecords { get; set; }
 		public ICollection<ComponentDirective> ComponentDirectives { get; set; }
 		public ICollection<ComponentLLPCategoryData> LLPData { get; set; }
+		
 	}
 }

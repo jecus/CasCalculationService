@@ -28,7 +28,7 @@ namespace BusinessLayer.Views
 
 		public int Cycles { get; set; }
 
-		public Reason CancelReason { get; set; }
+		public ReasonView CancelReason { get; set; }
 
 		public List<RunUpView> RunupsCollection { get; set; }
 
@@ -123,6 +123,7 @@ namespace BusinessLayer.Views
 			Cycles = source.Cycles;
 			RunupsCollection = source.RunupsCollection.Select(i => new RunUpView(i)).ToList();
 			PowerUnitTimeInRegimeCollection = source.Regimes.Select(i => new EngineTimeInRegimeView(i)).ToList();
+			CancelReason = new ReasonView(source.CancelReason);
 		}
 	}
 }

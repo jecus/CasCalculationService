@@ -29,8 +29,10 @@ namespace BusinessLayer.Repositiries
 				return aircraftFrame.AverageUtilization;
 			}
 
-			var s = await _storeCore.GetParentStoreAsync(source);
-			return s != null ? new AverageUtilization(0, 0) : null;
+			//var s = await _storeCore.GetParentStoreAsync(source);
+			//return s != null ? new AverageUtilization(0, 0) : null;
+
+			return new AverageUtilization(0,0);
 
 		}
 	}

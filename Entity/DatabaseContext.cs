@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Entity.Entity;
 using Entity.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace Entity
 		public DbSet<ComponentDirective> ComponentDirectives { get; set; }
 		public DbSet<BaseComponent> BaseComponents { get; set; }
 		public DbSet<ActualStateRecord> ActualStateRecords { get; set; }
+		public DbSet<Reason> Reason { get; set; }
 		public DbSet<TransferRecord> Set { get; set; }
 		public DbSet<ComponentLLPCategoryChangeRecord> ComponentLLPCategoryChangeRecords { get; set; }
 		private DbSet<IdQuery> IdQuery { get; set; }
@@ -60,24 +62,31 @@ namespace Entity
 
 			modelBuilder.Entity<MaintenanceDirective>()
 				.HasMany(i => i.PerformanceRecords).WithOne(i => i.MaintenanceDirective).HasForeignKey(i => i.ParentID);
+
+			modelBuilder.Entity<AircraftFlight>()
+				.HasOne(i => i.CancelReason)
+				.WithMany(i => i.AircraftFlightsCancels)
+				.HasForeignKey(i => i.CancelReasonId);
 		}
 
 		#endregion
 
 		#region public int GetIdFromQuery(string query)
 
-		public int GetIdFromQuery(string query)
+		public async Task<int> GetIdFromQuery(string query)
 		{
-			return IdQuery.FromSql(query).FirstOrDefault()?.Id ?? -1;
+			var res = await IdQuery.FromSql(query).FirstOrDefaultAsync();
+			return res?.Id ?? -1;
 		}
 
 		#endregion
 
 		#region public int GetDestinationObjectIdQueryFromQuery(string query)
 
-		public int GetDestinationObjectIdQueryFromQuery(string query)
+		public async Task<int> GetDestinationObjectIdQueryFromQuery(string query)
 		{
-			return DestinationObjectIdQuery.FromSql(query).FirstOrDefault()?.Id ?? -1;
+			var res = await DestinationObjectIdQuery.FromSql(query).FirstOrDefaultAsync();
+			return res?.Id ?? -1;
 		}
 
 		#endregion

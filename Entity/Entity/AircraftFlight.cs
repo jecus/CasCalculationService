@@ -43,5 +43,7 @@ namespace Entity.Entity
 
 		public ICollection<EngineTimeInRegime> Regimes { get; set; }
 
+		public Reason CancelReason { get; set; }
+
 	}
 }

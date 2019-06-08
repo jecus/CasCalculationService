@@ -82,11 +82,11 @@ namespace Entity.Entity
 
 		public ComponentDirective ComponentDirective { get; set; }
 
-		public Directive Directive { get; set; }
+		//public Directive Directive { get; set; }
 
 		public MaintenanceDirective MaintenanceDirective { get; set; }
 
-		public MaintenanceCheck MaintenanceCheck { get; set; }
+		//public MaintenanceCheck MaintenanceCheck { get; set; }
 
 		#endregion
 	}

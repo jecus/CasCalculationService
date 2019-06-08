@@ -22,35 +22,35 @@ namespace CalculationService.Controllers
 		[HttpPost("GetFlightLifelengthForPeriod")]
 		public async Task<JsonResult> GetFlightLifelengthForPeriod(int aircraftId, DateTime dateFrom, DateTime dateTo)
 		{
-			var res = await _calculator.GetFlightLifelengthForPeriod(aircraftId, dateFrom, dateTo);
+			var res = await _calculator.GetFlightLifelengthForPeriodAsync(aircraftId, dateFrom, dateTo);
 			return new JsonResult(res);
 		}
 
 		[HttpPost("GetFlightLifelengthOnStartOfDay")]
 		public async Task<JsonResult> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime currentDate)
 		{
-			var res = await _calculator.GetFlightLifelengthOnStartOfDay(aircraftId, currentDate);
+			var res = await _calculator.GetFlightLifelengthOnStartOfDayAsync(aircraftId, currentDate);
 			return new JsonResult(res);
 		}
 
 		[HttpPost("GetFlightLifelengthOnEndOfDay")]
 		public async Task<JsonResult> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime currentDate)
 		{
-			var res = await _calculator.GetFlightLifelengthOnEndOfDay(aircraftId, currentDate);
+			var res = await _calculator.GetFlightLifelengthOnEndOfDayAsync(aircraftId, currentDate);
 			return new JsonResult(res);
 		}
 
 		[HttpPost("GetFlightLifelengthIncludingThisFlight")]
 		public async Task<JsonResult> GetFlightLifelengthIncludingThisFlight(int flightId)
 		{
-			var res = await _calculator.GetFlightLifelengthIncludingThisFlight(flightId);
+			var res = await _calculator.GetFlightLifelengthIncludingThisFlightAsync(flightId);
 			return new JsonResult(res);
 		}
 
 		[HttpPost("GetCurrentFlightLifelength")]
 		public async Task<JsonResult> GetCurrentFlightLifelength(int aircraftId)
 		{
-			var res = await _calculator.GetCurrentFlightLifelength(aircraftId);
+			var res = await _calculator.GetCurrentFlightLifelengthAsync(aircraftId);
 			return new JsonResult(res);
 		}
 	}

@@ -18,11 +18,15 @@ namespace BusinessLayer.Repositiries
 
 		public async Task<AircraftView> GetAircraftByIdAsync(int aircraftId)
 		{
-			var frameId =  _db.GetIdFromQuery(GetQueryFrameId(aircraftId));
+			var frameId =  await _db.GetIdFromQuery(GetQueryFrameId(aircraftId));
 			var aircraft = await _db.Aircrafts
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == aircraftId);
+
+			if (aircraft == null)
+				return null;
+
 			aircraft.AircraftFrameId = frameId;
 			return new AircraftView(aircraft);
 		}
@@ -31,18 +35,18 @@ namespace BusinessLayer.Repositiries
 		{
 			if (source is MaintenanceDirectiveView)
 			{
-				var aircraftId = _db.GetIdFromQuery(GetQueryFrameId(((MaintenanceDirectiveView)source).Id));
+				var aircraftId =await _db.GetDestinationObjectIdQueryFromQuery(GetQueryFrameId(((MaintenanceDirectiveView)source).Id));
 				return await GetAircraftByIdAsync(aircraftId);
 			}
 			if (source is ComponentView)
 			{
-				var baseComponentId = _db.GetIdFromQuery(GetQueryComponentAircraft(((ComponentView)source).Id));
-				var aircraftId = _db.GetIdFromQuery(GetQueryComponentAircraft(baseComponentId));
+				var baseComponentId = await _db.GetDestinationObjectIdQueryFromQuery(GetQueryComponentAircraft(((ComponentView)source).Id));
+				var aircraftId = await _db.GetDestinationObjectIdQueryFromQuery(GetQueryComponentAircraft(baseComponentId));
 				return await GetAircraftByIdAsync(aircraftId);
 			}
 			if(source is ComponentDirectiveView)
 			{
-				var aircraftId = _db.GetIdFromQuery(GetQueryComponentDirectiveAircraft(((ComponentDirectiveView)source).Id));
+				var aircraftId = await _db.GetDestinationObjectIdQueryFromQuery(GetQueryComponentDirectiveAircraft(((ComponentDirectiveView)source).Id));
 				return await GetAircraftByIdAsync(aircraftId);
 			}
 			return null;

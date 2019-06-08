@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using BusinessLayer.Calculator;
 using BusinessLayer.Views;
 using Entity;
@@ -22,27 +24,53 @@ namespace BusinessLayer.Repositiries
 				.Include(i => i.TransferRecords)
 				.Include(i => i.Regimes)
 				.Include(i => i.LLPData)
+				.Include(i => i.ComponentDirectives)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == baseComponentId);
 
-			baseComponent.AircaraftId = _db.GetDestinationObjectIdQueryFromQuery(GetQueryForParentAircraft(baseComponentId));
+			if (baseComponent == null)
+				return null;
+
+			baseComponent.AircaraftId = await _db.GetDestinationObjectIdQueryFromQuery(GetQueryForParentAircraft(baseComponentId));
 			return new BaseComponentView(baseComponent);
 		}
 
 		public async Task<ComponentView> GetComponentByIdAsync(int componentId)
 		{
-			var component = await _db.BaseComponents
+			var component = await _db.Components
 				.Include(i => i.ActualStateRecords)
 				.Include(i => i.ChangeLLPCategoryRecords)
 				.Include(i => i.TransferRecords)
-				.Include(i => i.Regimes)
 				.Include(i => i.LLPData)
+				.Include(i => i.ComponentDirectives)
 				.AsNoTracking()
 				.OnlyActive()
 				.FirstOrDefaultAsync(i => i.Id == componentId);
 
+			if (component == null)
+				return null;
+
 			return new ComponentView(component);
+		}
+
+		public async Task<List<ComponentView>> GetComponentsAsync(List<int> componentIds)
+		{
+			var components = await _db.Components
+				.Include(i => i.ActualStateRecords)
+				.Include(i => i.ChangeLLPCategoryRecords)
+				.Include(i => i.TransferRecords)
+				.Include(i => i.LLPData)
+				.Include(i => i.ComponentDirectives)
+				.AsNoTracking()
+				.Where(i => componentIds.Contains(i.Id))
+				.OnlyActive().ToListAsync();
+				
+
+			if (components == null)
+				return null;
+
+			return components.Select(i => new ComponentView(i)).ToList();  
 		}
 
 

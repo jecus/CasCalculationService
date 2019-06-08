@@ -27,7 +27,32 @@ namespace BusinessLayer.Calculator
 			_aircraftRepository = aircraftRepository;
 			_componentRepository = componentRepository;
 		}
+		//Универсальные методы в контроллерах не нужны
+		public async Task<Lifelength> GetFlightLifelengthOnEndOfDay(BaseView directive, DateTime effectiveDate)
+		{
+			if (directive is BaseComponentView)
+				return await getFlightLifelengthOnEndOfDay((BaseComponentView)directive, effectiveDate);
+			if(directive is ComponentView)
+				return await getFlightLifelengthOnEndOfDay((ComponentView)directive, effectiveDate);
+			if (directive is AircraftView)
+				return await getFlightLifelengthOnEndOfDay((AircraftView)directive, effectiveDate);
 
+
+			return Lifelength.Null;
+		}
+
+		public async Task<Lifelength> GetFlightLifelengthOnStartOfDay(BaseView directive, DateTime effectiveDate)
+		{
+			if (directive is BaseComponentView)
+				return await getFlightLifelengthOnStartOfDay((BaseComponentView)directive, effectiveDate);
+			if (directive is ComponentView)
+				return await getFlightLifelengthOnEndOfDay((ComponentView)directive, effectiveDate);
+			if (directive is AircraftView)
+				return await getFlightLifelengthOnStartOfDay((AircraftView)directive, effectiveDate);
+
+
+			return Lifelength.Null;
+		}
 
 		/*
          * Расчет дат

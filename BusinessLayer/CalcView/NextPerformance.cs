@@ -4,6 +4,7 @@ using BusinessLayer.Calculator.Dictionaries;
 using BusinessLayer.CalcView;
 using BusinessLayer.Views;
 using Entity;
+using Newtonsoft.Json;
 
 namespace BusinessLayer.Vendors
 {
@@ -121,6 +122,7 @@ namespace BusinessLayer.Vendors
 		/// <summary>
 		/// Родительская задача
 		/// </summary>
+		[JsonIgnore]
 		public IDirective Parent
 		{
 			get { return _parent; }
