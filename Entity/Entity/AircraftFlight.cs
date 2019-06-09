@@ -36,7 +36,7 @@ namespace Entity.Entity
 		public int Cycles { get; set; }
 
 		[Column("CancelReasonId")]
-		public int CancelReasonId { get; set; }
+		public int? CancelReasonId { get; set; }
 
 		[NotMapped]
 		public List<RunUp> RunupsCollection { get; set; }
