@@ -124,7 +124,9 @@ namespace BusinessLayer.Views
 			Cycles = source.Cycles;
 			RunupsCollection = source.RunupsCollection?.Select(i => new RunUpView(i)).ToList();
 			PowerUnitTimeInRegimeCollection = source.Regimes?.Select(i => new EngineTimeInRegimeView(i)).ToList();
-			CancelReason = new ReasonView(source.CancelReason);
+
+			if(source.CancelReason != null)
+				CancelReason = new ReasonView(source.CancelReason);
 		}
 	}
 }
