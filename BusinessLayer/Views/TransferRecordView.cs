@@ -19,6 +19,8 @@ namespace BusinessLayer.Views
 
 		public TransferRecordView(TransferRecord source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			ParentID = source.ParentID;
 			TransferDate = source.TransferDate.Value;

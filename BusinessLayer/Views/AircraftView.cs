@@ -17,6 +17,8 @@ namespace BusinessLayer.Views
 
 		public AircraftView(Aircraft source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircraftFrameId = source.AircraftFrameId;
 			APUFH = source.APUFH;

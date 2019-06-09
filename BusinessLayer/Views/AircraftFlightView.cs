@@ -4,7 +4,6 @@ using System.Linq;
 using BusinessLayer.Vendors;
 using Entity;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Views
 {
@@ -111,6 +110,8 @@ namespace BusinessLayer.Views
 
 		public AircraftFlightView(AircraftFlight source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircraftId = source.AircraftId;
 			ATLBID = source.ATLBID;
@@ -121,8 +122,8 @@ namespace BusinessLayer.Views
 			LDGTime = source.LDGTime;
 			AtlbRecordType = source.AtlbRecordType;
 			Cycles = source.Cycles;
-			RunupsCollection = source.RunupsCollection.Select(i => new RunUpView(i)).ToList();
-			PowerUnitTimeInRegimeCollection = source.Regimes.Select(i => new EngineTimeInRegimeView(i)).ToList();
+			RunupsCollection = source.RunupsCollection?.Select(i => new RunUpView(i)).ToList();
+			PowerUnitTimeInRegimeCollection = source.Regimes?.Select(i => new EngineTimeInRegimeView(i)).ToList();
 			CancelReason = new ReasonView(source.CancelReason);
 		}
 	}

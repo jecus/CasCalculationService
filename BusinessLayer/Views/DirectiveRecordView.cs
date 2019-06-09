@@ -53,6 +53,8 @@ namespace BusinessLayer.Views
 
 		public DirectiveRecordView(DirectiveRecord source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			NumGroup = source.NumGroup;
 			RecordTypeID = source.RecordTypeID;

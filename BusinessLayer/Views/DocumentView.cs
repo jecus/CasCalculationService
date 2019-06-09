@@ -1,12 +1,11 @@
 ﻿using System;
 using BusinessLayer.Calculator.Dictionaries;
-using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
 using Entity.Entity;
 
 namespace BusinessLayer.Views
 {
-	public class DocumentView : BaseView, IDirective
+	public class DocumentView : BaseView
 	{
 		public bool RevisionValidTo { get; set; }
 
@@ -30,6 +29,8 @@ namespace BusinessLayer.Views
 
 		public DocumentView(Document source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			RevisionValidTo = source.RevisionValidTo.Value;
 			IssueValidTo = source.IssueValidTo.Value;

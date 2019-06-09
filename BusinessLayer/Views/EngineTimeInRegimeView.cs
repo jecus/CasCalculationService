@@ -23,11 +23,13 @@ namespace BusinessLayer.Views
 
 		public EngineTimeInRegimeView(EngineTimeInRegime source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			FlightId = source.FlightId;
 			BaseComponentId = source.EngineId;
 			FlightRegimeId = source.FlightRegimeId;
-			TimeInRegime =new TimeSpan(0 , source.TimeInRegime.HasValue ? source.TimeInRegime.Value : 0, 0); 
+			TimeInRegime = new TimeSpan(0 , source.TimeInRegime.HasValue ? source.TimeInRegime.Value : 0, 0); 
 			RecordDate = source.RecordDate;
 			GroundAir = source.GroundAir;
 			FlightRegime = FlightRegime.GetItemById(source.FlightRegimeId.HasValue ? source.FlightRegimeId.Value : -1);
