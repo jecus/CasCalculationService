@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using BusinessLayer.Calculator.Dictionaries;
+﻿using System.Linq;
 using BusinessLayer.Calculator.Views;
 using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
 using Entity;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Views
 {
@@ -18,6 +15,8 @@ namespace BusinessLayer.Views
 
 		public BaseComponentView(BaseComponent source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircaraftId = source.AircaraftId;
 			PartNumber = source.PartNumber;
@@ -25,9 +24,9 @@ namespace BusinessLayer.Views
 			IsBaseComponent = source.IsBaseComponent;
 			LLPMark = source.LLPMark;
 			LLPCategories = source.LLPCategories;
-			ActualStateRecords = source.ActualStateRecords.Select(i => new ActualStateRecordView(i)).ToList();
-			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
-			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
+			ActualStateRecords = source.ActualStateRecords?.Select(i => new ActualStateRecordView(i)).ToList();
+			TransferRecords = source.TransferRecords?.Select(i => new TransferRecordView(i)).ToList();
+			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords?.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
 			BaseComponentTypeId = source.BaseComponentTypeId;
 			AverageUtilization = AverageUtilization.ConvertFromByteArray(source.AverageUtilization);
 		}

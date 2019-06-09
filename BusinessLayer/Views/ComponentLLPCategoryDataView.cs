@@ -20,6 +20,8 @@ namespace BusinessLayer.Views
 
 		public ComponentLLPCategoryDataView(ComponentLLPCategoryData source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			LLPLifeLength = Lifelength.ConvertFromByteArray(source.LLPLifeLength);
 			LLPLifeLimit = Lifelength.ConvertFromByteArray(source.LLPLifeLimit);

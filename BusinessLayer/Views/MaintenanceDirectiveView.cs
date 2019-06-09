@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BusinessLayer.Calculator;
 using BusinessLayer.CalcView;
@@ -34,9 +32,11 @@ namespace BusinessLayer.Views
 
 		public MaintenanceDirectiveView(MaintenanceDirective source)
 		{
+			if (source == null)
+				return;
 			Threshold = CalcView.Threshold.ConvertForCMaintenanceDirective(source.Threshold);
 			IsClosed = source.IsClosed;
-			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords.Select(i => new DirectiveRecordView(i)));
+			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords?.Select(i => new DirectiveRecordView(i)));
 		}
 	}
 }

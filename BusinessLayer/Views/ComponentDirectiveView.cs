@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BusinessLayer.Calculator;
 using BusinessLayer.CalcView;
@@ -38,12 +37,14 @@ namespace BusinessLayer.Views
 
 		public ComponentDirectiveView(ComponentDirective source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			DirectiveType = source.DirectiveType;
 			ComponentId = source.ComponentId;
 			IsClosed = source.IsClosed;
 			Threshold = CalcView.Threshold.ConvertForComponentDirective(source.Threshold);
-			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords.Select(i => new DirectiveRecordView(i)));
+			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords?.Select(i => new DirectiveRecordView(i)));
 			ParentComponent =new ComponentView(source.Component); 
 		}
 	}

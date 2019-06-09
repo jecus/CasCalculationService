@@ -1,7 +1,6 @@
 ﻿using System;
 using BusinessLayer.Vendors;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Views
 {
@@ -16,6 +15,8 @@ namespace BusinessLayer.Views
 
 		public ComponentLLPCategoryChangeRecordView(ComponentLLPCategoryChangeRecord source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			ParentId = source.ParentId;
 			RecordDate = source.RecordDate.Value;

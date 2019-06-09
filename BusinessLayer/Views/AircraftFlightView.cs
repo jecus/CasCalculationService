@@ -4,7 +4,6 @@ using System.Linq;
 using BusinessLayer.Vendors;
 using Entity;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Views
 {
@@ -111,6 +110,8 @@ namespace BusinessLayer.Views
 
 		public AircraftFlightView(AircraftFlight source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircraftId = source.AircraftId;
 			ATLBID = source.ATLBID;

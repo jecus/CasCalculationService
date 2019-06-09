@@ -2,7 +2,6 @@
 using BusinessLayer.Vendors;
 using BusinessLayer.Views;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Calculator.Views
 {
@@ -22,6 +21,8 @@ namespace BusinessLayer.Calculator.Views
 
 		public ActualStateRecordView(ActualStateRecord source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			FlightRegimeId = source.FlightRegimeId;
 			Remarks = source.Remarks;

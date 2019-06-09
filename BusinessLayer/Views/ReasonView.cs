@@ -10,6 +10,8 @@ namespace BusinessLayer.Views
 
 		public ReasonView(Reason source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			Name = source.Name;
 			Category = source.Category;

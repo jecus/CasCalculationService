@@ -1,6 +1,5 @@
 ﻿using BusinessLayer.Vendors;
 using Entity.Entity;
-using Entity.Models;
 
 namespace BusinessLayer.Views
 {
@@ -20,6 +19,8 @@ namespace BusinessLayer.Views
 
 		public RunUpView(RunUp source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			BaseComponent = new BaseComponentView(source.BaseComponent);
 		}

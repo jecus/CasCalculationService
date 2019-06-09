@@ -64,6 +64,8 @@ namespace BusinessLayer.Views
 
 		public ComponentView(Component source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircaraftId = source.AircaraftId;
 			PartNumber = source.PartNumber;
@@ -76,11 +78,11 @@ namespace BusinessLayer.Views
 			WarrantyNotify = Lifelength.ConvertFromByteArray(source.WarrantyNotify);
 			LifeLimit = Lifelength.ConvertFromByteArray(source.LifeLimit);
 			LifeLimitNotify = Lifelength.ConvertFromByteArray(source.LifeLimitNotify);
-			ActualStateRecords = source.ActualStateRecords.Select(i => new ActualStateRecordView(i)).ToList();
-			TransferRecords = source.TransferRecords.Select(i => new TransferRecordView(i)).ToList();
-			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
-			ComponentDirectives = source.ComponentDirectives.Select(i => new ComponentDirectiveView(i)).ToList();
-			LLPData = source.LLPData.Select(i => new ComponentLLPCategoryDataView(i)).ToList();
+			ActualStateRecords = source.ActualStateRecords?.Select(i => new ActualStateRecordView(i)).ToList();
+			TransferRecords = source.TransferRecords?.Select(i => new TransferRecordView(i)).ToList();
+			ChangeLLPCategoryRecords = source.ChangeLLPCategoryRecords?.Select(i => new ComponentLLPCategoryChangeRecordView(i)).ToList();
+			ComponentDirectives = source.ComponentDirectives?.Select(i => new ComponentDirectiveView(i)).ToList();
+			LLPData = source.LLPData?.Select(i => new ComponentLLPCategoryDataView(i)).ToList();
 			AverageUtilization = AverageUtilization.ConvertFromByteArray(source.AverageUtilization);
 		}
 

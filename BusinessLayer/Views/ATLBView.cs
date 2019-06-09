@@ -10,6 +10,8 @@ namespace BusinessLayer.Views
 
 		public ATLBView(ATLB source)
 		{
+			if (source == null)
+				return;
 			Id = source.Id;
 			AircraftID = source.AircraftID;
 			ATLBNo = source.ATLBNo;
