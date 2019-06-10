@@ -1,4 +1,6 @@
 ﻿using CalculationService.Extentions;
+using CalculationService.Workers;
+using CalculationService.Workers.Infrastructure;
 using Entity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +28,7 @@ namespace CalculationService
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddWorker<AircraftFlightWorker>();
 			services.AddMvc().AddJsonOptions(options =>
 			{
 				options.SerializerSettings.Converters.Add(new StringEnumConverter());
