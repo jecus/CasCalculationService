@@ -35,6 +35,7 @@ namespace CalculationService.Workers
 				try
 				{
 					var flights = await _db.AircraftFlights
+						.Include(i => i.CancelReason)
 						.OnlyActive()
 						.ToListAsync();
 

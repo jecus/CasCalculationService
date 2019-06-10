@@ -1,4 +1,5 @@
-﻿using CalculationService.Extentions;
+﻿using System.Threading.Tasks;
+using CalculationService.Extentions;
 using CalculationService.Workers;
 using CalculationService.Workers.Infrastructure;
 using Entity;
@@ -69,6 +70,16 @@ namespace CalculationService
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", "Test API V1");
 			});
+
+			Initialize(app);
+		}
+
+		public virtual void Initialize(IApplicationBuilder app)
+		{
+			var scope = app.ApplicationServices.CreateScope();
+			var workers = scope.ServiceProvider.GetServices<IWorker>();
+			foreach (var worker in workers)
+				Task.Run(() => worker.Start());
 		}
 	}
 }
