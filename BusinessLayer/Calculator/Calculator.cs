@@ -581,7 +581,7 @@ namespace BusinessLayer.Calculator
 		}
 		#endregion
 
-		#region  public Lifelength GetFlightLifelength(int flightId, int baseComponentId, int flightRegimeId)
+		#region  public async Task<Lifelength> GetFlightLifelengthBaseComponentAsync(int flightId, int baseComponentId, int flightRegimeId)
 
 		/// <summary>
 		/// возвращает работу детали в заданном режиме за данный полет, если есть ссответствующие данные о работе. 
