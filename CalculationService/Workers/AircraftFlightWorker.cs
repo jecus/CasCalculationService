@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,9 +39,9 @@ namespace CalculationService.Workers
 				_logger.LogInformation($"Load Flights({DateTime.Now})");
 				try
 				{
-					GlobalObjects.Flights.Clear();
+					
 					var aircraftIds = await _db.Aircrafts.Select(i => i.Id).ToListAsync();
-
+					var temp = new Dictionary<int, List<AircraftFlightView>>();
 					Parallel.ForEach(aircraftIds.OrderBy(i => i), async id =>
 					{
 						var flights = await _db.AircraftFlights
@@ -50,10 +51,11 @@ namespace CalculationService.Workers
 							.AsNoTracking()
 							.ToListAsync();
 
-						GlobalObjects.Flights.Add(id, flights.Select(i => new AircraftFlightView(i)).ToList());
+						temp.Add(id, flights.Select(i => new AircraftFlightView(i)).ToList());
 					});
 
-					
+					GlobalObjects.Flights.Clear();
+					GlobalObjects.Flights = temp;
 					Thread.Sleep(TimeSpan.FromMinutes(5));
 				}
 				catch (Exception e)

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entity.Entity
 {
+	[Table("DirectivesRecords", Schema = "dbo")]
 	public class DirectiveRecord : BaseEntity
 	{
 		[Column("NumGroup")]

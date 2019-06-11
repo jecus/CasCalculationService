@@ -45,7 +45,12 @@ namespace BusinessLayer.Views
 			IsClosed = source.IsClosed;
 			Threshold = CalcView.Threshold.ConvertForComponentDirective(source.Threshold);
 			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords?.Select(i => new DirectiveRecordView(i)));
-			ParentComponent =new ComponentView(source.Component); 
+
+			if (source.Component != null)
+			{
+				   source.Component.ComponentDirectives.Clear();
+				   ParentComponent = new ComponentView(source.Component);
+			}
 		}
 	}
 }

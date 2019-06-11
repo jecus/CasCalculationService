@@ -30,6 +30,7 @@ namespace CalculationService
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddWorker<AircraftFlightWorker>();
+			services.AddWorker<BaseComponentWorker>();
 			services.AddMvc().AddJsonOptions(options =>
 			{
 				options.SerializerSettings.Converters.Add(new StringEnumConverter());

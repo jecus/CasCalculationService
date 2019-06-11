@@ -51,6 +51,27 @@ namespace BusinessLayer.Calculator
 			return res;
 		}
 
+		public async Task<List<NextPerformance>> NextPerformanceForComponentDirective(int componentDirectiveId)
+		{
+			var cd = await _componentRepository.GetComponentDirectiveByIdAsync(componentDirectiveId);
+			await GetNextPerformance(cd);
+			return cd.NextPerformances;
+		}
+
+		public async Task<Dictionary<int, List<NextPerformance>>> NextPerformanceForComponentDirectives(List<int> componentDirectiveIds)
+		{
+			var res = new Dictionary<int, List<NextPerformance>>();
+			var directives = await _componentRepository.GetComponentDirectivessAsync(componentDirectiveIds);
+
+			foreach (var directive in directives)
+			{
+				await GetNextPerformance(directive);
+				res.Add(directive.Id, directive.NextPerformances);
+			}
+
+			return res;
+		}
+
 
 		#region private void GetNextPerformance(Document directive)
 

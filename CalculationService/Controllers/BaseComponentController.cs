@@ -7,11 +7,11 @@ namespace CalculationService.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class BaseUnitController : ControllerBase
+	public class BaseComponentController : ControllerBase
     {
 	    private readonly ICalculator _calculator;
 
-	    public BaseUnitController(ICalculator calculator)
+	    public BaseComponentController(ICalculator calculator)
 	    {
 		    _calculator = calculator;
 	    }

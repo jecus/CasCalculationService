@@ -70,7 +70,7 @@ namespace BusinessLayer.Views
 			MaintenanceOrganization = source.MaintenanceOrganization;
 			MaintenanceDirectiveRecordId = source.MaintenanceDirectiveRecordId;
 			MaintenanceCheckRecordId = source.MaintenanceCheckRecordId;
-			PerformanceNum = source.PerformanceNum.Value;
+			PerformanceNum = source.PerformanceNum.HasValue ? source.PerformanceNum.Value : 0;
 			IsControlPoint = source.IsControlPoint;
 			ComplianceCheckName = source.ComplianceCheckName;
 			OnLifelength = Lifelength.ConvertFromByteArray(source.OnLifelength);

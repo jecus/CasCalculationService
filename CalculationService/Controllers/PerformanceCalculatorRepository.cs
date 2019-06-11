@@ -30,5 +30,19 @@ namespace CalculationService.Controllers
 			var res = await _performanceCalculator.NextPerformanceForComponents(componentIds);
 			return new JsonResult(res);
 		}
+
+		[HttpPost("NextPerformanceForComponentDirective")]
+		public async Task<JsonResult> NextPerformanceForComponentDirective(int componentDirectiveId)
+		{
+			var res = await _performanceCalculator.NextPerformanceForComponentDirective(componentDirectiveId);
+			return new JsonResult(res);
+		}
+
+		[HttpPost("NextPerformanceForComponentDirectives")]
+		public async Task<JsonResult> NextPerformanceForComponentDirectives(List<int> componentDirectiveIds)
+		{
+			var res = await _performanceCalculator.NextPerformanceForComponentDirectives(componentDirectiveIds);
+			return new JsonResult(res);
+		}
 	}
 }
