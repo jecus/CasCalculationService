@@ -3,6 +3,7 @@ using System.Linq;
 using BusinessLayer.Calculator;
 using BusinessLayer.CalcView;
 using BusinessLayer.Vendors;
+using Entity;
 using Entity.Entity;
 
 namespace BusinessLayer.Views
@@ -44,7 +45,7 @@ namespace BusinessLayer.Views
 			ComponentId = source.ComponentId;
 			IsClosed = source.IsClosed;
 			Threshold = CalcView.Threshold.ConvertForComponentDirective(source.Threshold);
-			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords?.Select(i => new DirectiveRecordView(i)));
+			PerformanceRecords = new List<DirectiveRecordView>(source.PerformanceRecords?.Where(i => i.ParentTypeId == (int)SmartCoreType.ComponentDirective).Select(i => new DirectiveRecordView(i)));
 
 			if (source.Component != null)
 			{

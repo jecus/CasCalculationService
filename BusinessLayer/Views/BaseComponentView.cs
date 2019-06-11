@@ -9,9 +9,14 @@ namespace BusinessLayer.Views
 {
 	public class BaseComponentView : ComponentView
 	{
+		private LifelengthCollection _lifelengthCalculated;
 		public BaseComponentType BaseComponentTypeId { get; set; }
 
-		public LifelengthCollection LifelengthCalculated { get; set; }
+		public LifelengthCollection LifelengthCalculated
+		{
+			get => _lifelengthCalculated ?? (_lifelengthCalculated = new LifelengthCollection(ManufactureDate));
+			set => _lifelengthCalculated = value;
+		}
 
 		public BaseComponentView(BaseComponent source)
 		{

@@ -60,6 +60,7 @@
 
 	public enum SmartCoreType
 	{
+		ComponentDirective = 2,
 		Aircraft = 7,
 	}
 

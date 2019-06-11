@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
-using Entity.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalculationService.Controllers

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
 using Microsoft.AspNetCore.Mvc;

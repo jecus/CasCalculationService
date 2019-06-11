@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using BusinessLayer.Calculator;
 using BusinessLayer.Repositiries;
-using BusinessLayer.Views;
 using CalculationService.Workers.Infrastructure;
 using Entity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CalculationService.Workers
@@ -17,12 +13,14 @@ namespace CalculationService.Workers
 	{
 		private readonly ILogger<AircraftFlightWorker> _logger;
 		private readonly IComponentRepository _componentRepository;
+		private readonly ICalculator _calculator;
 		private readonly DatabaseContext _db;
 
-		public BaseComponentWorker(ILogger<AircraftFlightWorker> logger, IComponentRepository componentRepository)
+		public BaseComponentWorker(ILogger<AircraftFlightWorker> logger, IComponentRepository componentRepository, ICalculator calculator)
 		{
 			_logger = logger;
 			_componentRepository = componentRepository;
+			_calculator = calculator;
 		}
 
 		#region Implementation of IDisposable
@@ -36,21 +34,33 @@ namespace CalculationService.Workers
 		{
 			_logger.LogInformation($"BaseComponent Worker started!");
 
-			while (true)
-			{
+			
 				_logger.LogInformation($"Load BaseComponent({DateTime.Now})");
 				try
 				{
+					Thread.Sleep(TimeSpan.FromMinutes(1));
+
 					var res = await _componentRepository.GetBaseComponents();
 					GlobalObjects.BaseComponents.Clear();
 					GlobalObjects.BaseComponents.AddRange(res);
-					Thread.Sleep(TimeSpan.FromMinutes(5));
+
+
+					while (true)
+					{
+						foreach (var baseComponent in GlobalObjects.BaseComponents)
+						{
+							baseComponent.LifelengthCalculated.Clear();
+							await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(baseComponent.Id, DateTime.Today);
+						}
+						Thread.Sleep(TimeSpan.FromMinutes(30));
+					}
 				}
 				catch (Exception e)
 				{
 					_logger.LogError(e.Message);
 				}
-			}
+
+				//}
 		}
 
 		#endregion

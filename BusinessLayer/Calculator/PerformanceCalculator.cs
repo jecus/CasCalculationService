@@ -418,34 +418,106 @@ namespace BusinessLayer.Calculator
 				}
 
 
-				np.PerformanceDate = null;
+				if (au != null)
+				{
+					if (directive.NextPerformances.Count > 0 &&
+						directive.NextPerformances.Last().PerformanceDate != null)
+					{
+						//к дате пред. выполнения добавляется количество дней
+						//за которое будет израсходован повторяющийся интервал директивы
+						//с учетом заданной средней утилизации
+						double? days;
+						if (directive is MaintenanceDirectiveView)
+						{
+							var d = directive as MaintenanceDirectiveView;
+							days = AnalystHelper.GetApproximateDays(Convert.ToDateTime(directive.NextPerformances.Last().PerformanceDate),
+									d.PhaseRepeat, au, conditionType);
+						}
+						else
+						{
+							days = AnalystHelper.GetApproximateDays(Convert.ToDateTime(directive.NextPerformances.Last().PerformanceDate),
+									threshold.RepeatInterval, au, conditionType);
+						}
 
-				if (directive.NextPerformances.Count > 0 &&
-				    directive.NextPerformances.Last().PerformanceDate != null)
-				{
-					//к дате пред. выполнения добавляется количество дней
-					//за которое будет израсходован повторяющийся интервал директивы
-					//с учетом заданной средней утилизации
-					double? days = threshold.RepeatInterval.Days;
-					if (days != null)
-						np.PerformanceDate = directive.NextPerformances.Last().PerformanceDate.Value.AddDays(Convert.ToDouble(days));
-					else np.PerformanceDate = null;
-				}
-				else if (directive.LastPerformance != null)
-				{
-					double? days = threshold.RepeatInterval.Days;
-					if (days != null)
-						np.PerformanceDate = directive.LastPerformance.RecordDate.AddDays(Convert.ToDouble(days));
-					else np.PerformanceDate = null;
+
+						if (days != null)
+							np.PerformanceDate = directive.NextPerformances.Last().PerformanceDate.Value.AddDays(Convert.ToDouble(days));
+						else np.PerformanceDate = null;
+					}
+					else if (directive.LastPerformance != null)
+					{
+						double? days;
+						if (directive is MaintenanceDirectiveView)
+						{
+							var d = directive as MaintenanceDirectiveView;
+							days =
+								AnalystHelper.GetApproximateDays(directive.LastPerformance.RecordDate,
+									d.PhaseRepeat, au, conditionType);
+						}
+						else
+						{
+							days =
+								AnalystHelper.GetApproximateDays(directive.LastPerformance.RecordDate,
+									threshold.RepeatInterval, au, conditionType);
+						}
+
+
+
+						if (days != null)
+							np.PerformanceDate = directive.LastPerformance.RecordDate.AddDays(Convert.ToDouble(days));
+						else np.PerformanceDate = null;
+					}
+					else
+					{
+						double? days = AnalystHelper.GetApproximateDays(np.PerformanceSource, au, conditionType);
+						if (days != null)
+						{
+							if (directive is MaintenanceDirectiveView && np.PerformanceSource.Days.HasValue)
+							{
+								np.PerformanceDate = _calculator.GetManufactureDate(directive.LifeLengthParent).AddDays(np.PerformanceSource.Days.Value);
+							}
+							else
+							{
+								if (days <= current.Days)
+									np.PerformanceDate = _calculator.GetManufactureDate(directive.LifeLengthParent).AddDays(Convert.ToDouble(days));
+								else np.PerformanceDate = AnalystHelper.GetApproximateDate(np.Remains, au, conditionType);
+							}
+
+						}
+						else np.PerformanceDate = null;
+					}
 				}
 				else
 				{
-					double? days = np.PerformanceSource.Days;
-					if (days != null)
+					np.PerformanceDate = null;
+
+					if (directive.NextPerformances.Count > 0 &&
+						directive.NextPerformances.Last().PerformanceDate != null)
 					{
-						np.PerformanceDate = _calculator.GetManufactureDate(directive.LifeLengthParent).AddDays(Convert.ToDouble(days));
+						//к дате пред. выполнения добавляется количество дней
+						//за которое будет израсходован повторяющийся интервал директивы
+						//с учетом заданной средней утилизации
+						double? days = threshold.RepeatInterval.Days;
+						if (days != null)
+							np.PerformanceDate = directive.NextPerformances.Last().PerformanceDate.Value.AddDays(Convert.ToDouble(days));
+						else np.PerformanceDate = null;
 					}
-					else np.PerformanceDate = null;
+					else if (directive.LastPerformance != null)
+					{
+						double? days = threshold.RepeatInterval.Days;
+						if (days != null)
+							np.PerformanceDate = directive.LastPerformance.RecordDate.AddDays(Convert.ToDouble(days));
+						else np.PerformanceDate = null;
+					}
+					else
+					{
+						double? days = np.PerformanceSource.Days;
+						if (days != null)
+						{
+							np.PerformanceDate = _calculator.GetManufactureDate(directive.LifeLengthParent).AddDays(Convert.ToDouble(days));
+						}
+						else np.PerformanceDate = null;
+					}
 				}
 
 				#endregion
@@ -470,6 +542,8 @@ namespace BusinessLayer.Calculator
 				}
 
 				#endregion
+
+				break;
 			}
 		}
 

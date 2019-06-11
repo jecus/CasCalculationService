@@ -41,12 +41,20 @@ namespace CalculationService.Workers
 				{
 					
 					var aircraftIds = await _db.Aircrafts.Select(i => i.Id).ToListAsync();
+					var atlbs = await _db.Atlbs
+						.Where(i => aircraftIds.Contains(i.AircraftID.Value))
+						.OnlyActive()
+						.AsNoTracking()
+						.ToListAsync();
+
 					var temp = new Dictionary<int, List<AircraftFlightView>>();
+
 					Parallel.ForEach(aircraftIds.OrderBy(i => i), async id =>
 					{
+						var ids = atlbs.Where(i => i.AircraftID == id).Select(i => i.Id).ToList();
 						var flights = await _db.AircraftFlights
 							.Include(i => i.CancelReason)
-							.Where(i => i.AircraftId == id)
+							.Where(i => ids.Contains(i.ATLBID))
 							.OnlyActive()
 							.AsNoTracking()
 							.ToListAsync();
