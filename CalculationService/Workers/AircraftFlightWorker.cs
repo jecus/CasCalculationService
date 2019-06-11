@@ -31,8 +31,11 @@ namespace CalculationService.Workers
 
 		public async void Start()
 		{
+			_logger.LogInformation($"Flight Worker started!");
+
 			while (true)
 			{
+				_logger.LogInformation($"Load Flights({DateTime.Now})");
 				try
 				{
 					GlobalObjects.Flights.Clear();
@@ -55,7 +58,7 @@ namespace CalculationService.Workers
 				}
 				catch (Exception e)
 				{
-					_logger.LogDebug(e.Message);
+					_logger.LogError(e.Message);
 				}
 			}
 		}
