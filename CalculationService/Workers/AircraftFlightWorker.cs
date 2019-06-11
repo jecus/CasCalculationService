@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using BusinessLayer.Calculator;
 using BusinessLayer.Views;
 using CalculationService.Workers.Infrastructure;
@@ -34,15 +35,22 @@ namespace CalculationService.Workers
 			{
 				try
 				{
-					var flights = await _db.AircraftFlights
-						.Include(i => i.CancelReason)
-						.OnlyActive()
-						.ToListAsync();
-
 					GlobalObjects.Flights.Clear();
-					foreach (var fl in flights.Where(i => i.AircraftId != null).GroupBy(i => i.AircraftId))
-						GlobalObjects.Flights.Add(fl.Key.Value, fl.Select(i => new AircraftFlightView(i)).ToList());
+					var aircraftIds = await _db.Aircrafts.Select(i => i.Id).ToListAsync();
 
+					Parallel.ForEach(aircraftIds.OrderBy(i => i), async id =>
+					{
+						var flights = await _db.AircraftFlights
+							.Include(i => i.CancelReason)
+							.Where(i => i.AircraftId == id)
+							.OnlyActive()
+							.AsNoTracking()
+							.ToListAsync();
+
+						GlobalObjects.Flights.Add(id, flights.Select(i => new AircraftFlightView(i)).ToList());
+					});
+
+					
 					Thread.Sleep(TimeSpan.FromMinutes(5));
 				}
 				catch (Exception e)

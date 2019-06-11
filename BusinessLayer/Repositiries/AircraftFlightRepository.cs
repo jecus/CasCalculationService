@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BusinessLayer.Calculator;
 using BusinessLayer.Views;
+using CalculationService;
 using Entity;
-using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLayer.Repositiries
 {
@@ -20,53 +19,60 @@ namespace BusinessLayer.Repositiries
 
 		public async Task<List<AircraftFlightView>> GetAircraftFlightsByAircraftIdAsync(int aircraftId)
 		{
-			var atlbs = await _db.Atlbs
-				.Where(i => i.AircraftID == aircraftId)
-				.OnlyActive()
-				.AsNoTracking()
-				.ToListAsync();
-			var ids = atlbs.Select(i => i.Id).ToList();
+			GlobalObjects.Flights.TryGetValue(aircraftId, out var flights);
+			return flights;
 
-			var res = await _db.AircraftFlights
-				.Include(i => i.CancelReason)
-				.AsNoTracking()
-				.OnlyActive()
-				.Where(i => ids.Contains(i.ATLBID))
-				.ToListAsync();
+			//var atlbs = await _db.Atlbs
+			//	.Where(i => i.AircraftID == aircraftId)
+			//	.OnlyActive()
+			//	.AsNoTracking()
+			//	.ToListAsync();
+			//var ids = atlbs.Select(i => i.Id).ToList();
 
-			if (res == null)
-				return null;
+			//var res = await _db.AircraftFlights
+			//	.Include(i => i.CancelReason)
+			//	.AsNoTracking()
+			//	.OnlyActive()
+			//	.Where(i => ids.Contains(i.ATLBID))
+			//	.ToListAsync();
 
-			return res.Select(i => new AircraftFlightView(i)).ToList();
+			//if (res == null)
+			//	return null;
+
+			//return res.Select(i => new AircraftFlightView(i)).ToList();
 		}
 
 		public async Task<AircraftFlightView> GetAircraftFlightsByIdAsync(int flightId)
 		{
-			var res = await _db.AircraftFlights
-				.Include(i => i.CancelReason)
-				.AsNoTracking()
-				.OnlyActive()
-				.FirstOrDefaultAsync(i => i.Id == flightId);
+			return GlobalObjects.Flights.SelectMany(i => i.Value).FirstOrDefault(i => i.Id == flightId);
+			//var res = await _db.AircraftFlights
+			//	.Include(i => i.CancelReason)
+			//	.AsNoTracking()
+			//	.OnlyActive()
+			//	.FirstOrDefaultAsync(i => i.Id == flightId);
 
-			if (res == null)
-				return null;
+			//if (res == null)
+			//	return null;
 
-			return new AircraftFlightView(res);
+			//return new AircraftFlightView(res);
 		}
 
 		public async Task<List<AircraftFlightView>> GetAircraftFlightsOnDate(int aircraftId, DateTime onDate)
 		{
-			var res = await _db.AircraftFlights
-				.Include(i => i.CancelReason)
-				.AsNoTracking()
-				.OnlyActive()
-				.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate)
-				.ToListAsync();
+			GlobalObjects.Flights.TryGetValue(aircraftId, out var flights);
+			return flights.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate).ToList();
 
-			if (res == null)
-				return null;
+			//var res = await _db.AircraftFlights
+			//	.Include(i => i.CancelReason)
+			//	.AsNoTracking()
+			//	.OnlyActive()
+			//	.Where(i => i.AircraftId == aircraftId && i.FlightDate <= onDate)
+			//	.ToListAsync();
 
-			return res.Select(i => new AircraftFlightView(i)).ToList();
+			//if (res == null)
+			//	return null;
+
+			//return res.Select(i => new AircraftFlightView(i)).ToList();
 		}
 	}
 }
