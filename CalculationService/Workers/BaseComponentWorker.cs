@@ -16,7 +16,8 @@ namespace CalculationService.Workers
 		private readonly ICalculator _calculator;
 		private readonly DatabaseContext _db;
 
-		public BaseComponentWorker(ILogger<AircraftFlightWorker> logger, IComponentRepository componentRepository, ICalculator calculator)
+		public BaseComponentWorker(ILogger<AircraftFlightWorker> logger, IComponentRepository componentRepository,
+			ICalculator calculator)
 		{
 			_logger = logger;
 			_componentRepository = componentRepository;
@@ -27,42 +28,51 @@ namespace CalculationService.Workers
 
 		public void Dispose()
 		{
-			
+
 		}
 
 		public async void Start()
 		{
 			_logger.LogInformation($"BaseComponent Worker started!");
 
-			
-				_logger.LogInformation($"Load BaseComponent({DateTime.Now})");
-				try
+
+			_logger.LogInformation($"Load BaseComponent({DateTime.Now})");
+			try
+			{
+				Thread.Sleep(TimeSpan.FromMinutes(1));
+
+				var res = await _componentRepository.GetBaseComponents();
+				GlobalObjects.BaseComponents.Clear();
+
+				var aircraftIds = GlobalObjects.Flights.Select(i => i.Key);
+				foreach (var bc in res)
 				{
-					Thread.Sleep(TimeSpan.FromMinutes(1));
+					var tr = bc.TransferRecords.FirstOrDefault(i =>
+						i.DestinationObjectType == (int) SmartCoreType.Aircraft);
+					if (tr != null && aircraftIds.Contains(tr.DestinationObjectId.Value))
+						GlobalObjects.BaseComponents.Add(bc);
+				}
 
-					var res = await _componentRepository.GetBaseComponents();
-					GlobalObjects.BaseComponents.Clear();
-					GlobalObjects.BaseComponents.AddRange(res);
 
-
-					while (true)
+				while (true)
+				{
+					foreach (var baseComponent in GlobalObjects.BaseComponents)
 					{
-						foreach (var baseComponent in GlobalObjects.BaseComponents)
-						{
-							baseComponent.LifelengthCalculated.Clear();
-							await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(baseComponent.Id, DateTime.Today);
-						}
-						Thread.Sleep(TimeSpan.FromMinutes(30));
+						baseComponent.LifelengthCalculated.Clear();
+						
+						await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(baseComponent.Id,
+							DateTime.Today);
 					}
 				}
-				catch (Exception e)
-				{
-					_logger.LogError(e.Message);
-				}
 
-				//}
+				Thread.Sleep(TimeSpan.FromMinutes(30));
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+			}
+
+			#endregion
 		}
-
-		#endregion
 	}
 }

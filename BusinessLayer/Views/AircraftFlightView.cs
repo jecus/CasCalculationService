@@ -9,6 +9,7 @@ namespace BusinessLayer.Views
 {
 	public class AircraftFlightView : BaseView
 	{
+		private List<RunUpView> _runupsCollection;
 		public int? AircraftId { get; set; }
 
 		public int ATLBID { get; set; }
@@ -29,7 +30,11 @@ namespace BusinessLayer.Views
 
 		public ReasonView CancelReason { get; set; }
 
-		public List<RunUpView> RunupsCollection { get; set; }
+		public List<RunUpView> RunupsCollection
+		{
+			get => _runupsCollection ?? (_runupsCollection = new List<RunUpView>());
+			set => _runupsCollection = value;
+		}
 
 		#region public Lifelength FlightTimeLifelength
 

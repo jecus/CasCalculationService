@@ -40,7 +40,7 @@ namespace CalculationService.Workers
 				try
 				{
 					
-					var aircraftIds = await _db.Aircrafts.Select(i => i.Id).ToListAsync();
+					var aircraftIds = await _db.Aircrafts.OnlyActive().Select(i => i.Id).ToListAsync();
 					var atlbs = await _db.Atlbs
 						.Where(i => aircraftIds.Contains(i.AircraftID.Value))
 						.OnlyActive()
@@ -49,7 +49,21 @@ namespace CalculationService.Workers
 
 					var temp = new Dictionary<int, List<AircraftFlightView>>();
 
-					Parallel.ForEach(aircraftIds.OrderBy(i => i), async id =>
+					//Parallel.ForEach(aircraftIds.OrderBy(i => i), async id =>
+					//{
+					//	var ids = atlbs.Where(i => i.AircraftID == id).Select(i => i.Id).ToList();
+					//	var flights = await _db.AircraftFlights
+					//		.Include(i => i.CancelReason)
+					//		.Where(i => ids.Contains(i.ATLBID))
+					//		.OnlyActive()
+					//		.AsNoTracking()
+					//		.ToListAsync();
+
+					//	temp.Add(id, flights.Select(i => new AircraftFlightView(i)).ToList());
+					//});
+
+
+					foreach (var id in aircraftIds.OrderBy(i => i))
 					{
 						var ids = atlbs.Where(i => i.AircraftID == id).Select(i => i.Id).ToList();
 						var flights = await _db.AircraftFlights
@@ -60,7 +74,7 @@ namespace CalculationService.Workers
 							.ToListAsync();
 
 						temp.Add(id, flights.Select(i => new AircraftFlightView(i)).ToList());
-					});
+					}
 
 					GlobalObjects.Flights.Clear();
 					GlobalObjects.Flights = temp;
