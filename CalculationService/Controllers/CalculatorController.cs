@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace CalculationService.Controllers
 {
@@ -10,18 +11,28 @@ namespace CalculationService.Controllers
 	public class CalculatorController : ControllerBase
 	{
 		private readonly ICalculator _calculator;
+		private readonly ILogger<CalculatorController> _logger;
 
-		public CalculatorController(ICalculator calculator)
+		public CalculatorController(ICalculator calculator, ILogger<CalculatorController> logger)
 		{
 			_calculator = calculator;
+			_logger = logger;
 		}
 
 		// GET api/values
 		[HttpPost("GetFlightLifelengthForPeriod")]
-		public async Task<JsonResult> GetFlightLifelengthForPeriod(int aircraftId, DateTime dateFrom, DateTime dateTo)
+		public async Task<IActionResult> GetFlightLifelengthForPeriod(int aircraftId, DateTime dateFrom, DateTime dateTo)
 		{
-			var res = await _calculator.GetFlightLifelengthForPeriodAsync(aircraftId, dateFrom, dateTo);
-			return new JsonResult(res);
+			try
+			{
+				var res = await _calculator.GetFlightLifelengthForPeriodAsync(aircraftId, dateFrom, dateTo);
+				return Ok(res);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
 		}
 
 		[HttpPost("GetFlightLifelengthOnStartOfDay")]
