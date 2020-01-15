@@ -36,31 +36,63 @@ namespace CalculationService.Controllers
 		}
 
 		[HttpPost("GetFlightLifelengthOnStartOfDay")]
-		public async Task<JsonResult> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime currentDate)
+		public async Task<IActionResult> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime currentDate)
 		{
-			var res = await _calculator.GetFlightLifelengthOnStartOfDayAsync(aircraftId, currentDate);
-			return new JsonResult(res);
+			try
+			{
+				var res = await _calculator.GetFlightLifelengthOnStartOfDayAsync(aircraftId, currentDate);
+				return Ok(res);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
 		}
 
 		[HttpPost("GetFlightLifelengthOnEndOfDay")]
-		public async Task<JsonResult> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime currentDate)
+		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime currentDate)
 		{
-			var res = await _calculator.GetFlightLifelengthOnEndOfDayAsync(aircraftId, currentDate);
-			return new JsonResult(res);
+			try
+			{
+				var res = await _calculator.GetFlightLifelengthOnEndOfDayAsync(aircraftId, currentDate);
+				return Ok(res);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
 		}
 
 		[HttpPost("GetFlightLifelengthIncludingThisFlight")]
-		public async Task<JsonResult> GetFlightLifelengthIncludingThisFlight(int flightId)
+		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlight(int flightId)
 		{
-			var res = await _calculator.GetFlightLifelengthIncludingThisFlightAsync(flightId);
-			return new JsonResult(res);
+			try
+			{
+				var res = await _calculator.GetFlightLifelengthIncludingThisFlightAsync(flightId);
+				return Ok(res);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
 		}
 
 		[HttpPost("GetCurrentFlightLifelength")]
-		public async Task<JsonResult> GetCurrentFlightLifelength(int aircraftId)
+		public async Task<IActionResult> GetCurrentFlightLifelength(int aircraftId)
 		{
-			var res = await _calculator.GetCurrentFlightLifelengthAsync(aircraftId);
-			return new JsonResult(res);
+			try
+			{
+				var res = await _calculator.GetCurrentFlightLifelengthAsync(aircraftId);
+				return Ok(res);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
 		}
 	}
 }
