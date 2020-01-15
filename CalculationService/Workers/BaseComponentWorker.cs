@@ -53,7 +53,6 @@ namespace CalculationService.Workers
 						GlobalObjects.BaseComponents.Add(bc);
 				}
 
-
 				while (true)
 				{
 					foreach (var baseComponent in GlobalObjects.BaseComponents)
@@ -63,9 +62,10 @@ namespace CalculationService.Workers
 						await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(baseComponent.Id,
 							DateTime.Today);
 					}
+
+					Thread.Sleep(TimeSpan.FromMinutes(30));
 				}
 
-				Thread.Sleep(TimeSpan.FromMinutes(30));
 			}
 			catch (Exception e)
 			{
