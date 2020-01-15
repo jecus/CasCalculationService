@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Views.In;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -20,12 +21,12 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("GetFlightLifelengthIncludingThisFlightBaseComponent")]
-		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlightBaseComponent(int baseComponentId, int flightId)
+		[HttpPost("getFlightLifelengthIncludingThisFlight")]
+		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlightBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthIncludingThisFlightBaseComponentAsync(baseComponentId, flightId);
+				var res = await _calculator.GetFlightLifelengthIncludingThisFlightBaseComponentAsync(view.BaseComponentId, view.FlightId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -35,12 +36,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnStartOfDayBaseComponent")]
-		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayBaseComponent(int baseComponentId, DateTime date)
+		[HttpPost("getFlightLifelengthOnStartOfDay")]
+		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnStartOfDayBaseComponentAsync(baseComponentId, date);
+				var res = await _calculator.GetFlightLifelengthOnStartOfDayBaseComponentAsync(view.BaseComponentId, view.Date);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -50,12 +51,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnStartOfDayBaseComponentRegime")]
-		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayBaseComponent(int baseComponentId, DateTime date, int flightRegimeId)
+		[HttpPost("getFlightLifelengthOnStartOfDayRegime")]
+		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnStartOfDayBaseComponentAsync(baseComponentId, date, flightRegimeId);
+				var res = await _calculator.GetFlightLifelengthOnStartOfDayBaseComponentAsync(view.BaseComponentId, view.Date, view.FlightRegimeId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -65,12 +66,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetCurrentFlightLifelengthBaseComponent")]
-		public async Task<IActionResult> GetCurrentFlightLifelengthBaseComponent(int baseComponentId)
+		[HttpPost("getCurrentFlightLifelength")]
+		public async Task<IActionResult> GetCurrentFlightLifelengthBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetCurrentFlightLifelengthBaseComponentAsync(baseComponentId);
+				var res = await _calculator.GetCurrentFlightLifelengthBaseComponentAsync(view.BaseComponentId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -80,12 +81,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnEndOfDayBaseComponent")]
-		public async Task<IActionResult> GetFlightLifelengthOnEndOfDayBaseComponent(int baseComponentId, DateTime effectiveDate)
+		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		public async Task<IActionResult> GetFlightLifelengthOnEndOfDayBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(baseComponentId, effectiveDate);
+				var res = await _calculator.GetFlightLifelengthOnEndOfDayBaseComponentAsync(view.BaseComponentId, view.EffectiveDate);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -95,12 +96,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthForPeriodBaseComponent")]
-		public async Task<IActionResult> GetFlightLifelengthForPeriodBaseComponent(int baseComponentId, DateTime fromDate, DateTime toDate)
+		[HttpPost("getFlightLifelengthForPeriod")]
+		public async Task<IActionResult> GetFlightLifelengthForPeriodBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthForPeriodBaseComponentAsync(baseComponentId, fromDate, toDate);
+				var res = await _calculator.GetFlightLifelengthForPeriodBaseComponentAsync(view.BaseComponentId, view.FromDate, view.ToDate);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -110,12 +111,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthForPeriodBaseComponentWithRegime")]
-		public async Task<IActionResult> GetFlightLifelengthForPeriodBaseComponent(int baseComponentId, DateTime fromDate, DateTime toDate, int flightRegimeId)
+		[HttpPost("getFlightLifelengthForPeriodWithRegime")]
+		public async Task<IActionResult> GetFlightLifelengthForPeriodWithRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthForPeriodBaseComponentAsync(baseComponentId, fromDate, toDate, flightRegimeId);
+				var res = await _calculator.GetFlightLifelengthForPeriodBaseComponentAsync(view.BaseComponentId, view.FromDate, view.ToDate, view.FlightRegimeId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -125,12 +126,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthBaseComponent")]
-		public async Task<IActionResult> GetFlightLifelengthBaseComponent(int flightId, int baseComponentId)
+		[HttpPost("getFlightLifelength")]
+		public async Task<IActionResult> GetFlightLifelengthBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthBaseComponentAsync(flightId, baseComponentId);
+				var res = await _calculator.GetFlightLifelengthBaseComponentAsync(view.FlightId, view.BaseComponentId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -140,12 +141,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthBaseComponentWithRegime")]
-		public async Task<IActionResult> GetFlightLifelengthBaseComponent(int flightId, int baseComponentId, int flightRegimeId)
+		[HttpPost("getFlightLifelengthWithRegime")]
+		public async Task<IActionResult> GetFlightLifelengthWithRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthBaseComponentAsync(flightId, baseComponentId, flightRegimeId);
+				var res = await _calculator.GetFlightLifelengthBaseComponentAsync(view.FlightId, view.BaseComponentId, view.FlightRegimeId);
 				return Ok(res);
 			}
 			catch (Exception e)

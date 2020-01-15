@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Views.In;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -20,12 +21,12 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("GetCurrentFlightLifelength")]
-		public async Task<IActionResult> GetCurrentFlightLifelength(int componentId)
+		[HttpPost("getCurrentFlightLifelength")]
+		public async Task<IActionResult> GetCurrentFlightLifelength(InComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetCurrentFlightLifelength(componentId);
+				var res = await _calculator.GetCurrentFlightLifelength(view.ComponentId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -35,12 +36,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnEndOfDay")]
-		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(int componentId, DateTime effectiveDate)
+		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(InComponentView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnEndOfDay(componentId, effectiveDate);
+				var res = await _calculator.GetFlightLifelengthOnEndOfDay(view.ComponentId, view.EffectiveDate);
 				return Ok(res);
 			}
 			catch (Exception e)

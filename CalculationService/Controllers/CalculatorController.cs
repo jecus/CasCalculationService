@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Views.In;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -20,12 +21,12 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("GetFlightLifelengthForPeriod")]
-		public async Task<IActionResult> GetFlightLifelengthForPeriod(int aircraftId, DateTime dateFrom, DateTime dateTo)
+		[HttpPost("getFlightLifelengthForPeriod")]
+		public async Task<IActionResult> GetFlightLifelengthForPeriod(InCalculatorView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthForPeriodAsync(aircraftId, dateFrom, dateTo);
+				var res = await _calculator.GetFlightLifelengthForPeriodAsync(view.AircraftId, view.DateFrom, view.DateTo);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -35,12 +36,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnStartOfDay")]
-		public async Task<IActionResult> GetFlightLifelengthOnStartOfDay(int aircraftId, DateTime currentDate)
+		[HttpPost("getFlightLifelengthOnStartOfDay")]
+		public async Task<IActionResult> GetFlightLifelengthOnStartOfDay(InCalculatorView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnStartOfDayAsync(aircraftId, currentDate);
+				var res = await _calculator.GetFlightLifelengthOnStartOfDayAsync(view.AircraftId, view.CurrentDate);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -50,12 +51,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthOnEndOfDay")]
-		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(int aircraftId, DateTime currentDate)
+		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(InCalculatorView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthOnEndOfDayAsync(aircraftId, currentDate);
+				var res = await _calculator.GetFlightLifelengthOnEndOfDayAsync(view.AircraftId, view.CurrentDate);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -65,12 +66,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetFlightLifelengthIncludingThisFlight")]
-		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlight(int flightId)
+		[HttpPost("getFlightLifelengthIncludingThisFlight")]
+		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlight(InCalculatorView view)
 		{
 			try
 			{
-				var res = await _calculator.GetFlightLifelengthIncludingThisFlightAsync(flightId);
+				var res = await _calculator.GetFlightLifelengthIncludingThisFlightAsync(view.FlightId);
 				return Ok(res);
 			}
 			catch (Exception e)
@@ -80,12 +81,12 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("GetCurrentFlightLifelength")]
-		public async Task<IActionResult> GetCurrentFlightLifelength(int aircraftId)
+		[HttpPost("getCurrentFlightLifelength")]
+		public async Task<IActionResult> GetCurrentFlightLifelength(InCalculatorView view)
 		{
 			try
 			{
-				var res = await _calculator.GetCurrentFlightLifelengthAsync(aircraftId);
+				var res = await _calculator.GetCurrentFlightLifelengthAsync(view.AircraftId);
 				return Ok(res);
 			}
 			catch (Exception e)
