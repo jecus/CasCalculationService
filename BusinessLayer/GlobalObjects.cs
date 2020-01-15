@@ -8,6 +8,13 @@ namespace CalculationService
 	{
 		private static Dictionary<int, List<AircraftFlightView>> _flights;
 		private static List<BaseComponentView> _baseComponents;
+		private static List<AircraftView> _aircrafts;
+
+		public static List<AircraftView> Aircrafts
+		{
+			get => _aircrafts ?? (_aircrafts = new List<AircraftView>());
+			set => _aircrafts = value;
+		}
 
 		public static Dictionary<int, List<AircraftFlightView>> Flights
 		{
