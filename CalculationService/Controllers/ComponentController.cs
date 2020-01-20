@@ -21,7 +21,7 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("getCurrentFlightLifelength")]
+		[HttpPost("current")]
 		public async Task<IActionResult> GetCurrentFlightLifelength(InComponentView view)
 		{
 			try
@@ -36,7 +36,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		[HttpPost("onendofday")]
 		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(InComponentView view)
 		{
 			try

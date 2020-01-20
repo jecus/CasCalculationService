@@ -21,7 +21,7 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("getFlightLifelengthForPeriod")]
+		[HttpPost("forperiod")]
 		public async Task<IActionResult> GetFlightLifelengthForPeriod(InCalculatorView view)
 		{
 			try
@@ -36,7 +36,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnStartOfDay")]
+		[HttpPost("onstartofday")]
 		public async Task<IActionResult> GetFlightLifelengthOnStartOfDay(InCalculatorView view)
 		{
 			try
@@ -51,7 +51,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		[HttpPost("onendofday")]
 		public async Task<IActionResult> GetFlightLifelengthOnEndOfDay(InCalculatorView view)
 		{
 			try
@@ -66,7 +66,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthIncludingThisFlight")]
+		[HttpPost("includingthisflight")]
 		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlight(InCalculatorView view)
 		{
 			try
@@ -81,7 +81,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getCurrentFlightLifelength")]
+		[HttpPost("currentflight")]
 		public async Task<IActionResult> GetCurrentFlightLifelength(InCalculatorView view)
 		{
 			try

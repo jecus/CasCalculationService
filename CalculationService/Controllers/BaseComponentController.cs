@@ -21,7 +21,7 @@ namespace CalculationService.Controllers
 		}
 
 		// GET api/values
-		[HttpPost("getFlightLifelengthIncludingThisFlight")]
+		[HttpPost("includingthisflight")]
 		public async Task<IActionResult> GetFlightLifelengthIncludingThisFlightBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -36,7 +36,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnStartOfDay")]
+		[HttpPost("onstartofday")]
 		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -51,7 +51,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnStartOfDayRegime")]
+		[HttpPost("onstartofdayregime")]
 		public async Task<IActionResult> GetFlightLifelengthOnStartOfDayRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -66,7 +66,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getCurrentFlightLifelength")]
+		[HttpPost("currentflight")]
 		public async Task<IActionResult> GetCurrentFlightLifelengthBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -81,7 +81,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthOnEndOfDay")]
+		[HttpPost("onendofday")]
 		public async Task<IActionResult> GetFlightLifelengthOnEndOfDayBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -96,7 +96,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthForPeriod")]
+		[HttpPost("forperiod")]
 		public async Task<IActionResult> GetFlightLifelengthForPeriodBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -111,7 +111,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthForPeriodWithRegime")]
+		[HttpPost("forperiodwithregime")]
 		public async Task<IActionResult> GetFlightLifelengthForPeriodWithRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -126,7 +126,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelength")]
+		[HttpPost("flight")]
 		public async Task<IActionResult> GetFlightLifelengthBaseComponent(InBaseComponentView view)
 		{
 			try
@@ -141,7 +141,7 @@ namespace CalculationService.Controllers
 			}
 		}
 
-		[HttpPost("getFlightLifelengthWithRegime")]
+		[HttpPost("withregime")]
 		public async Task<IActionResult> GetFlightLifelengthWithRegimeBaseComponent(InBaseComponentView view)
 		{
 			try
