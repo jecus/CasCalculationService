@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BusinessLayer.Calculator;
+using BusinessLayer.Vendors;
 using BusinessLayer.Views.In;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -94,6 +96,31 @@ namespace CalculationService.Controllers
 				_logger.LogError(e.Message);
 				return BadRequest(new { Error = e.Message });
 			}
+		}
+
+		[HttpPost("resethmath")]
+		public async Task<IActionResult> ResethMath(InCalculatorView view)
+		{
+			try
+			{
+				var baseComponents = GlobalObjects.BaseComponents.Where(i => i.AircaraftId == view.AircraftId);
+
+				foreach (var baseComponent in baseComponents)
+				{
+					if (baseComponent.LifelengthCalculated != null)
+						baseComponent.LifelengthCalculated.Clear();
+					else baseComponent.LifelengthCalculated = new LifelengthCollection(baseComponent.ManufactureDate);
+				}
+
+				return Ok();
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(e.Message);
+				return BadRequest(new { Error = e.Message });
+			}
+
+
 		}
 	}
 }
